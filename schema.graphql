@@ -1,0 +1,11 @@
+type Event {
+  id: ID!
+  title: String!
+  startTime: DateTime! @search
+  startTimeYear: Int! @search
+  startTimeMonth: Int! @search
+  startTimeDayOfMonth: Int! @search
+  startTimeDayOfWeek: String! @search
+  startTimeHourOfDay: Int! @search
+  startTimeZone: String! @search
+}

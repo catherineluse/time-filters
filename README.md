@@ -1,70 +1,89 @@
-# Getting Started with Create React App
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-## Available Scripts
+# Running the back end
 
-In the project directory, you can run:
+To set up the back end, I started Dgraph's Docker quickstart:
 
-### `yarn start`
+```
+docker run -it -p 8080:8080 dgraph/standalone:master
+```
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+I created a `schema.graphql` file containing the event type:
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+```
+type Event {
+  id: ID!
+  title: String!
+  startTime: DateTime! @search
+  startTimeYear: Int! @search
+  startTimeMonth: Int! @search
+  startTimeDayOfMonth: Int! @search
+  startTimeDayOfWeek: String! @search
+  startTimeHourOfDay: Int! @search
+  startTimeZone: String! @search
+}
+```
 
-### `yarn test`
+Then I added the schema in the `schema.graphql` to Dgraph: 
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+```
+curl -X POST BACKEND-IP:8080/admin/schema --data-binary '@schema.graphql'
+```
 
-### `yarn build`
+I added sample data by sending a POST request to `http://BACKEND-IP/graphql` with a GraphQL mutation in the body:
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```
+mutation {
+  addEvent(input: [
+    {
+      title: "Tempe Event",
+      startTime: "2021-06-25T02:21:37.146Z",
+      startTimeYear: 2021
+      startTimeMonth: 6
+      startTimeDayOfMonth: 25
+      startTimeDayOfWeek: "Friday"
+      startTimeHourOfDay: 2
+    },
+    {
+      title: "Phoenix Event",
+      startTime: "2022-07-25T02:21:37.146Z",
+      startTimeYear: 2022
+      startTimeMonth: 7
+      startTimeDayOfMonth: 25
+      startTimeDayOfWeek: "Friday"
+      startTimeHourOfDay: 2
+    },
+    {
+      title: "Flagstaff Event",
+      startTime: "2023-08-25T05:21:37.146Z",
+      startTimeYear: 2022
+      startTimeMonth: 8
+      startTimeDayOfMonth: 25
+      startTimeDayOfWeek: "Friday"
+      startTimeHourOfDay: 5
+    },
+  ]) {
+    event {
+      id
+      title
+      description
+      Community {
+        url
+      }
+      Organizer {
+        username
+      }
+      startTime
+      isInPrivateResidence
+      cost
+    }
+  }
+}
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+# Running the front end
 
-### `yarn eject`
-
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
-
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
-
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
-
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
-
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `yarn build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+```
+npm start
+```

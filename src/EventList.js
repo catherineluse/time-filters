@@ -1,15 +1,13 @@
 import React, {useEffect, useState} from "react";
 import { useQuery, gql } from "@apollo/client";
+import { buildWeekdayFilter, buildWeekdayFilterRecursively} from './weekdayFilters'
 const { DateTime } = require("luxon");
 
 
-
-
-const timeRangeTypes = {
+const dateRangeTypes = {
     FUTURE: "FUTURE",
     PAST: "PAST",
-    CERTAIN_DAY: "CERTAIN_DAY",
-    BETWEEN_TWO_DATES: "BETWEEN_TWO_DATES"
+    BETWEEN_TWO_DATETIMES: "BETWEEN_TWO_DATETIMES"
 }
 
 const AllEvents = () => {
@@ -17,12 +15,14 @@ const AllEvents = () => {
     
 
   const now = DateTime.now();
+  const nowISO = now.toISO();
   const defaultStartDateObj = now.startOf("day");
   const defaultStartDateISO = defaultStartDateObj.toISO();
 
-  const [dateRange, setDateRange] = useState(timeRangeTypes.FUTURE)
+  const [dateRange, setDateRange] = useState(dateRangeTypes.FUTURE)
   const [beginningOfDateRange, setBeginningOfDateRange] = useState(defaultStartDateISO)
   const [endOfDateRange, setEndOfDateRange] = useState(defaultEndDateISO);
+  const [limitResultsToOneDay, setLimitResultsToOneDay] = useState(false)
   
   // Can be used to get events in non-contiguous years.
   const [requireYears, setRequireYears] = useState(false)
@@ -34,11 +34,14 @@ const AllEvents = () => {
   const [months, setMonths] = useState([])
 
   // Can be combined with month to get events that happen
-  // on a certain day without specifying the year.
+  // on a certain day without specifying the year, or events
+  // that happen on non-contiguous days.
   const [requireDaysOfMonth, setRequireDaysOfMonth] = useState(false)
   const [daysOfMonth, setDaysOfMonth] = useState([])
 
-  // Can be used to get events that happen on certain weekdays.
+  // Can be used to get events that happen on certain weekdays
+  // across a longer time period, or across multiple
+  // non-contiguous weekdays.
   const [requireWeekdays, setRequireWeekdays] = useState(false)
   const [weekdays, setWeekdays] = useState([])
 
@@ -46,20 +49,90 @@ const AllEvents = () => {
   const [beginningOfHourRange, setBeginningOfHourRange] = useState(defaultStartDateISO)
   const [endOfHourRange, setEndOfHourRange] = useState(defaultEndDateISO)
 
-  const [queryOrder, setQueryOrder] = useState({order: { 
-    desc: startTime
-  }})
-  const [startTimeFilter, setStartTimeFilter] = useState({
-    startTime: {
-        gt: defaultStartDateISO
-      }
-  })
+  const [resultsPerPage, setResultsPerPage] = useState(10)
+
+
+  // Variables for the order of the results
+  const chronologicalOrder = "{ asc: startTime }"
+  const reverseChronologicalOrder = "{ desc: startTime }"
+  const [resultsOrder, setResultsOrder] = useState(chronologicalOrder);
+
+
+
+
+
+  const futureEventsFilter = `gt: ${nowISO}`
+  const pastEventsFilter = `lt: ${nowISO}`
+  const betweenDateTimesFilter = `between: { min: ${beginningOfDateRange}, max: ${endOfDateRange}}`
+
+  const [startTimeFilter, setStartTimeFilter] = useState(futureEventsFilter)
   const [advancedTimeFilters, advancedTimeFilters] = useState(null)
+
+
+  const dateRangeFilter = () => {
+    // Variables for querying events by startTime, which is in DateTime format.
+
+    switch(dateRange) {
+        case dateRangeTypes.FUTURE:
+          return futureEventsFilter;
+          break;
+        case dateRangeTypes.PAST:
+          return pastEventsFilter;
+          break;
+        case dateRangeTypes.BETWEEN_TWO_DATETIMES:
+          return betweenDateTimesFilter;
+          break;
+        default:
+          alert("No DateTime range was selected.")
+          return ""
+      } 
+  }
+
+  const advancedTimeFilters = () => {
+      // Variables for querying events from multiple windows of time
+      // using individual components of a time, such as year,
+      // month, day of month, weekday and hour.
+      if (!requireYear && !requireMonths && !requireDaysOfMonth && !requireWeekdays && !requireRangeOfHours){
+          return ""
+      }
+  }
+
+  const buildEventFilters = () => {
+      let eventFilterString = `(
+          order: ${resultsOrder},
+          first: ${resultsPerPage},
+          filter: {
+            startTime: {
+                ${dateRangeFilter}
+            },
+            ${advancedTimeFilters}
+          }
+        )`
+  }
+
+
+  
+
+  const useChronologicalOrder = () => {
+      setResultsOrder(chronologicalOrder)
+  }
+
+  const useReverseChronologicalOrder = () => {
+      setResultsOrder(reverseChronologicalOrder);
+  }
+
+  const showPastEvents = () => {
+    setStartTimeFilter(pastEventsFilter)
+ }
+
+  const showFutureEvents = () => {
+    setStartTimeFilter(futureEventsFilter)
+  }
 
 
   let GET_EVENTS = gql`
   query getEvents {
-    queryEvent {
+    queryEvent ${buildEventFilters()}{
       id
       title
       description
@@ -91,24 +164,12 @@ const AllEvents = () => {
 
   const { loading, error, data } = useQuery(GET_EVENTS);
 
-  let queryString = gql`
-    query {
-        queryEvent(
-            filter: {
-                startTime: {
-                    lt: "2021-06-26T01:20:54.912Z"
-                }
-            },
-            order: { 
-                desc: startTime
-                }, 
-        ) { 
-            id
-            title
-            startTime
-        }
-    }
-`
+  useEffect(() => {
+      // when limitResultsToOneDay is true,
+      // update the beginning and end date range
+  })
+
+ 
   // The simple date filters are in this useEffect.
   // Search events before or after a DateTime,
   // or between min and max DateTimes.

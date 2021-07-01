@@ -66,16 +66,7 @@ mutation {
     event {
       id
       title
-      description
-      Community {
-        url
-      }
-      Organizer {
-        username
-      }
       startTime
-      isInPrivateResidence
-      cost
     }
   }
 }

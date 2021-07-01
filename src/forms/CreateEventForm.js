@@ -1,28 +1,41 @@
-import React, { useState, useContext} from "react";
-import { Auth0Context } from "../../../react-auth0-spa";
+import React, { useState } from "react";
 import { useMutation, gql } from "@apollo/client";
 import { Link } from "react-router-dom";
 import { useParams } from "react-router-dom";
-import { ADD_EVENT } from "../../../graphQLData/event/mutations";
-import { getUsername } from "../../usernameUtils";
-import ReusedEventFormFields from "./eventFormFields/ReusedEventFormFields";
+import ReusedEventFormFields from "./ReusedEventFormFields";
 import { useHistory } from "react-router-dom";
-import { GET_COMMUNITY_WITH_DISCUSSIONS_AND_EVENTS } from '../../../graphQLData/community/queries';
 
 const { DateTime } = require("luxon");
 
 var now = DateTime.now();
 
+const ADD_EVENT = gql`
+  mutation addEvent(
+    $title: String!
+    $startTime: String!
+  ) {
+    addEvent(
+      input: [
+        {
+          title: $title
+          startTime: $startTime
+        }
+      ]
+    ) {
+      event {
+        id
+        title
+        startTime
+      }
+    }
+  }
+`;
+
 const CreateEventForm = () => {
   const { url } = useParams();
   let history = useHistory();
 
-  const { user } = useContext(Auth0Context);
-  const username = getUsername(user);
-
   const [title, setTitle] = useState("");
-
-  const [description, setDescription] = useState("");
 
   const defaultStartTimeObj = now.startOf("hour").plus({ hours: 1 });
   const defaultStartTimeISO = defaultStartTimeObj.toISO();

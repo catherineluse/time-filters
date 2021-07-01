@@ -1,13 +1,45 @@
 import React, { useState, useEffect } from "react";
-import { useMutation, useQuery } from "@apollo/client";
-import { UPDATE_EVENT } from "../../../graphQLData/event/mutations";
-import { GET_EVENT } from "../../../graphQLData/event/queries";
+import { useMutation, useQuery, gql } from "@apollo/client";
 import { Link } from "react-router-dom";
 import ReusedEventFormFields from "./ReusedEventFormFields";
 import { useParams } from "react-router-dom";
 import { useHistory } from "react-router-dom";
 
 const { DateTime } = require("luxon");
+
+const UPDATE_EVENT = gql`
+  mutation updateEvent(
+    $id: ID!
+    $title: String
+    $startTime: String
+  ) {
+    updateEvent(
+      input: {
+        filter: { id: [$id] }
+        set: {
+          title: $title
+          startTime: $startTime
+        }
+      }
+    ) {
+      event {
+        id
+        title
+        startTime
+      }
+    }
+  }
+`;
+
+const GET_EVENT = gql`
+  query getEvent($id: ID!) {
+    getEvent(id: $id) {
+      id
+      title
+      startTime
+    }
+  }
+`;
 
 const EditEventForm = () => {
   const { eventId } = useParams();

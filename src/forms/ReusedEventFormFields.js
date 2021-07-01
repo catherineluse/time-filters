@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React from "react";
 import {
   getStartTimeISOs,
   getReadableTimeFromISO,
-} from "../../eventUtils";
+} from "../eventUtils";
 import TextField from "@material-ui/core/TextField";
 import { DatePicker } from "@material-ui/pickers";
 import { makeStyles } from "@material-ui/core/styles";
@@ -38,41 +38,6 @@ const ReusedEventFormFields = ({ formState, submitMutation }) => {
     startTime: { startTime, setStartTime },
   } = formState;
 
-
-  useEffect(() => {
-    // We do these checks:
-    // - Title is included
-    // - Start date and time are in the future
-    // console.log('Debug changes required', {
-    //   title,
-    //   startTime,
-    // })
-    let now = DateTime.now().toISO();
-    const needsChanges = !(
-      title.length > 0 &&
-      startTime > now
-    );
-
-    if (needsChanges) {
-      setChangesRequired(true);
-      // console.log("changes are required");
-      // console.log({
-      //   title,
-      //   startTime,
-      // });
-    } else {
-      // console.log("changes are not required");
-      // console.log({
-      //   title,
-      //   startTime,
-      // });
-      setChangesRequired(false);
-    }
-  }, [
-    title,
-    startTime,
-  ]);
-
   const onSubmit = async (e) => {
     e.preventDefault();
     submitMutation();
@@ -90,7 +55,6 @@ const ReusedEventFormFields = ({ formState, submitMutation }) => {
 
 
   const classes = useStyles();
-  const now = DateTime.now().toISO();
 
   return (
     <form className={classes.root} onSubmit={onSubmit}>
@@ -101,36 +65,24 @@ const ReusedEventFormFields = ({ formState, submitMutation }) => {
         required
         autoFocus
         variant="outlined"
-        error={touchedTitle && title.length === 0}
         value={title}
         className="form-control"
         onChange={(e) => {
           e.preventDefault();
           setTitle(e.target.value);
-          setTouchedTitle(true);
         }}
-        helperText={
-          touchedTitle && title.length === 0
-            ? eventFormErrorDescriptions.INVALID_TITLE
-            : ""
-        }
       />
       <div className="spacer" />
 
       <h2>Time</h2>
       <DatePicker
         margin="normal"
-        error={startTime < now}
         format="cccc LLLL d"
         value={startTime}
         onChange={(newStartDateObj) => {
           const newStartDateISO = newStartDateObj.toISO();
           handleStartDateChange(newStartDateISO);
         }}
-        helperText={startTime < now
-            ? eventFormErrorDescriptions.START_TIME_NOT_IN_FUTURE
-            : ""
-        }
       />
       <FormControl className={classes.formControl}>
         <Autocomplete
@@ -154,13 +106,8 @@ const ReusedEventFormFields = ({ formState, submitMutation }) => {
             return (
               <TextField
                 {...params}
-                error={startTime < now ? true : false}
                 onChange={({ target }) => setStartTime(target.value)}
                 label="Start Time"
-                helperText={startTime < now
-                    ? eventFormErrorDescriptions.START_TIME_NOT_IN_FUTURE
-                    : ""
-                }
               />
             );
           }}
@@ -171,7 +118,6 @@ const ReusedEventFormFields = ({ formState, submitMutation }) => {
       <button
         type="button"
         onClick={onSubmit}
-        disabled={changesRequired}
         className="form-submit btn btn-dark"
       >
         Submit

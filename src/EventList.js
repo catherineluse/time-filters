@@ -220,7 +220,37 @@ const AllEvents = () => {
       }
     }
     return false;
-  }
+  };
+
+  // This function makes it so that when a weekday
+  // is selected with a checkbox in the form
+  // for selecting availability windows, it applies
+  // the weekday filter.
+  const toggleSelectWeekday = (day) => {
+    const removeWeekday = () => {
+      const newWeekdays = selectedWeekdays.filter(weekday => weekday.name !== day.name)
+      setSelectedWeekdays(newWeekdays)
+      console.log({newWeekdays})
+    }
+    const addWeekday = () => {
+      const newWeekdays = [...selectedWeekdays, day]
+      setSelectedWeekdays(newWeekdays)
+
+      // If there is a specific time window that is
+      // already selected on this weekday, we should
+      // remove it, assuming the intent is that you 
+      // want to show everything on the given weekday.
+      if (day.name in selectedWeeklyHourRanges){
+        delete selectedWeeklyHourRanges[day.name]
+      }
+      console.log({newWeekdays})
+    }
+    if (selectedWeekdays.indexOf(day) !== -1){
+      removeWeekday()
+    } else {
+      addWeekday()
+    }
+  };
 
   // This function selects time ranges based on the
   // check boxes in individual table cells where each
@@ -277,12 +307,25 @@ const AllEvents = () => {
 
     const getTableRowItems = (hourRangeData) => {
       return weekdays.map((weekday) => {
+
+        const getWeekdayIsSelected = () => {
+          if (selectedWeekdays.map(w => w.name).indexOf(weekday.name) !== -1){
+            return true
+          }
+          return false
+        }
+
+        const weekdayIsSelected = getWeekdayIsSelected()
+
         return (
           <td key={weekday.shortName}>
             <BootstrapForm.Check
-              name="showFreeEvents"
               type="checkbox"
-              checked={timeRangeIsAlreadySelected(weekday.name, hourRangeData["12-hour-label"])}
+              disabled={weekdayIsSelected}
+              checked={weekdayIsSelected || timeRangeIsAlreadySelected(
+                weekday.name,
+                hourRangeData["12-hour-label"]
+              )}
               onChange={() => {
                 toggleWeeklyTimeRange(
                   weekday.name,
@@ -661,11 +704,11 @@ const AllEvents = () => {
               {weekdays.map((weekday) => (
                 <th scope="col" key={weekday.shortName}>
                   <BootstrapForm.Check
-                    name="showFreeEvents"
                     type="checkbox"
-                    // value={}
-                    checked={false}
-                    onChange={() => {}}
+                    checked={
+                      (selectedWeekdays.map(w => w.name).indexOf(weekday.name) !== -1) === true ? true : false
+                    }
+                    onChange={() => {toggleSelectWeekday(weekday)}}
                     label={weekday.shortName}
                   />
                 </th>
@@ -679,7 +722,6 @@ const AllEvents = () => {
                 <tr key={hourRangeData["12-hour-label"]}>
                   <td>
                     <BootstrapForm.Check
-                      name="showFreeEvents"
                       type="checkbox"
                       // value={}
                       checked={false}

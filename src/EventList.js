@@ -6,7 +6,7 @@ import { KeyboardDatePicker } from "@material-ui/pickers";
 import Checkbox from "@material-ui/core/Checkbox";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
+import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -20,30 +20,44 @@ const dateRangeTypes = {
   CERTAIN_DATE: "CERTAIN_DATE",
 };
 
+const years = [
+  "2015",
+  "2016",
+  "2017",
+  "2018",
+  "2019",
+  "2020",
+  "2021",
+  "2022",
+  "2023",
+];
+
 const months = [
-  { number: "1", name: "January"},
-  { number: "2", name: "February"},
-  { number: "3", name: "March"},
-  { number: "4", name: "April"},
-  { number: "5", name: "May"},
-  { number: "6", name: "June"},
-  { number: "7", name: "July"},
-  { number: "8", name: "August"},
-  { number: "9", name: "September"},
-  { number: "10", name: "October"},
-  { number: "11", name: "November"},
-  { number: "12", name: "December"},
+  { number: "1", name: "January" },
+  { number: "2", name: "February" },
+  { number: "3", name: "March" },
+  { number: "4", name: "April" },
+  { number: "5", name: "May" },
+  { number: "6", name: "June" },
+  { number: "7", name: "July" },
+  { number: "8", name: "August" },
+  { number: "9", name: "September" },
+  { number: "10", name: "October" },
+  { number: "11", name: "November" },
+  { number: "12", name: "December" },
 ];
 
 const weekdays = [
-  { number: "1", name: "Sunday"},
-  { number: "2", name: "Monday"},
-  { number: "3", name: "Tuesday"},
-  { number: "4", name: "Wednesday"},
-  { number: "5", name: "Thursday"},
-  { number: "6", name: "Friday"},
-  { number: "7", name: "Saturday"}
-]
+  { number: "1", name: "Sunday" },
+  { number: "2", name: "Monday" },
+  { number: "3", name: "Tuesday" },
+  { number: "4", name: "Wednesday" },
+  { number: "5", name: "Thursday" },
+  { number: "6", name: "Friday" },
+  { number: "7", name: "Saturday" },
+];
+
+const daysOfTheMonth = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
 
 const AllEvents = () => {
   const now = DateTime.now();
@@ -72,8 +86,7 @@ const AllEvents = () => {
   );
 
   // Can be used to get events in non-contiguous years.
-  const [requireYears, setRequireYears] = useState(false);
-  const [years, setYears] = useState({});
+  const [selectedYears, setSelectedYears] = useState([]);
 
   // Get events from a specific month across multiple years,
   // or non-contiguous months, like April and June but not May.
@@ -89,12 +102,13 @@ const AllEvents = () => {
   // non-contiguous weekdays.
   const [selectedWeekdays, setSelectedWeekdays] = useState([]);
 
-  const [requireRangeOfHours, setRequireRangeOfHours] = useState(false)
+  const [requireRangeOfHours, setRequireRangeOfHours] = useState(false);
   const [beginningOfHourRange, setBeginningOfHourRange] =
     useState(defaultStartDateISO);
   const [endOfHourRange, setEndOfHourRange] = useState(defaultEndDateRangeISO);
 
-  const [requireAvailabilityWindows, setRequireAvailabilityWindows] = useState(false)
+  const [requireAvailabilityWindows, setRequireAvailabilityWindows] =
+    useState(false);
   const [availabilityWindows, setAvailabilityWindows] = useState({});
 
   const [resultsPerPage, setResultsPerPage] = useState(10);
@@ -107,10 +121,16 @@ const AllEvents = () => {
 
   const betweenDateTimesFilter = `between: { min: "${beginningOfDateRange}", max: "${endOfDateRange}"}`;
   const certainDayFilter = `between: {min: "${startOfCertainDay}", max: "${endOfCertainDay}"}`;
-  const certainYearsFilter = `startTimeYear: {anyofterms: "${years}"`;
-  const certainMonthsFilter = `startTimeMonth: {anyofterms: "${selectedMonths.map(e => e.number).join(" ")}"}`;
-  const certainDaysOfMonthFilter = `startTimeDayOfMonth: {anyofterms: "${selectedDaysOfMonth.join("")}"}`;
-  const certainWeekdaysFilter = `startTimeDayOfWeek: {anyofterms: "${selectedWeekdays.map(e => e.name).join(" ")}"}`;
+  const certainYearsFilter = `startTimeYear: {anyofterms: "${selectedYears.join(" ")}"}`;
+  const certainMonthsFilter = `startTimeMonth: {anyofterms: "${selectedMonths
+    .map((e) => e.number)
+    .join(" ")}"}`;
+  const certainDaysOfMonthFilter = `startTimeDayOfMonth: {anyofterms: "${selectedDaysOfMonth.join(
+    ""
+  )}"}`;
+  const certainWeekdaysFilter = `startTimeDayOfWeek: {anyofterms: "${selectedWeekdays
+    .map((e) => e.name)
+    .join(" ")}"}`;
   const certainRangeOfHoursFilter = `startTimeHourOfDay: {between: {min: ${beginningOfHourRange},max: ${endOfHourRange}}}}`;
   const availabilityWindowsFilter = () => {
     if (!availabilityWindows) {
@@ -143,13 +163,13 @@ const AllEvents = () => {
     console.log({
       certainDaysOfMonthFilter,
       certainMonthsFilter,
-      certainWeekdaysFilter
-    })
+      certainWeekdaysFilter,
+    });
     console.log({
       selectedDaysOfMonth,
       selectedMonths,
-      selectedWeekdays
-    })
+      selectedWeekdays,
+    });
     let eventFilterString = `(
           order: ${resultsOrder},
           first: ${resultsPerPage},
@@ -157,7 +177,7 @@ const AllEvents = () => {
             startTime: {
                 ${startTimeFilter}
             },
-            ${requireYears ? certainYearsFilter : ""}
+            ${selectedYears.length ? certainYearsFilter : ""}
             ${selectedMonths.length > 0 ? certainMonthsFilter : ""}
             ${selectedDaysOfMonth.length > 0 ? certainDaysOfMonthFilter : ""}
             ${selectedWeekdays.length > 0 ? certainWeekdaysFilter : ""}
@@ -170,8 +190,8 @@ const AllEvents = () => {
 
   let eventFilters = buildEventFilters();
   console.log({
-    eventFilters
-  })
+    eventFilters,
+  });
 
   const showPastEvents = () => {
     setStartTimeFilter(pastEventsFilter);
@@ -461,6 +481,33 @@ const AllEvents = () => {
             are not natively supported by Dgraph's DateTime filters.
           </p>
         </div>
+        <p>Limit events to certain years:</p>
+        <Autocomplete
+          multiple
+          id="select-years"
+          options={years}
+          disableCloseOnSelect
+          getOptionLabel={(option) => option}
+          value={selectedYears}
+          onChange={(_, inputYears) => {
+            setSelectedYears(inputYears);
+          }}
+          renderOption={(option, { selected }) => (
+            <React.Fragment>
+              <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                style={{ marginRight: 8 }}
+                checked={selected}
+              />
+              {option}
+            </React.Fragment>
+          )}
+          style={{ width: 500 }}
+          renderInput={(params) => (
+            <TextField {...params} variant="outlined" placeholder="Years" />
+          )}
+        />
         <p>Limit events to certain months:</p>
         <Autocomplete
           multiple
@@ -470,7 +517,7 @@ const AllEvents = () => {
           getOptionLabel={(option) => option.name}
           value={selectedMonths}
           onChange={(_, inputMonths) => {
-            setSelectedMonths(inputMonths)
+            setSelectedMonths(inputMonths);
           }}
           renderOption={(option, { selected }) => (
             <React.Fragment>
@@ -497,7 +544,7 @@ const AllEvents = () => {
           getOptionLabel={(option) => option.name}
           value={selectedWeekdays}
           onChange={(_, inputWeekdays) => {
-            setSelectedWeekdays(inputWeekdays)
+            setSelectedWeekdays(inputWeekdays);
           }}
           renderOption={(option, { selected }) => (
             <React.Fragment>

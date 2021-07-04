@@ -35,6 +35,16 @@ const months = [
   { number: "12", name: "December"},
 ];
 
+const weekdays = [
+  { number: "1", name: "Sunday"},
+  { number: "2", name: "Monday"},
+  { number: "3", name: "Tuesday"},
+  { number: "4", name: "Wednesday"},
+  { number: "5", name: "Thursday"},
+  { number: "6", name: "Friday"},
+  { number: "7", name: "Saturday"}
+]
+
 const AllEvents = () => {
   const now = DateTime.now();
   const currentYear = now.year;
@@ -100,7 +110,7 @@ const AllEvents = () => {
   const certainYearsFilter = `startTimeYear: {anyofterms: "${years}"`;
   const certainMonthsFilter = `startTimeMonth: {anyofterms: "${selectedMonths.map(e => e.number).join(" ")}"}`;
   const certainDaysOfMonthFilter = `startTimeDayOfMonth: {anyofterms: "${selectedDaysOfMonth.join("")}"}`;
-  const certainWeekdaysFilter = `startTimeDayOfWeek: {anyofterms: "${selectedWeekdays}"}`;
+  const certainWeekdaysFilter = `startTimeDayOfWeek: {anyofterms: "${selectedWeekdays.map(e => e.name).join(" ")}"}`;
   const certainRangeOfHoursFilter = `startTimeHourOfDay: {between: {min: ${beginningOfHourRange},max: ${endOfHourRange}}}}`;
   const availabilityWindowsFilter = () => {
     if (!availabilityWindows) {
@@ -454,14 +464,13 @@ const AllEvents = () => {
         <p>Limit events to certain months:</p>
         <Autocomplete
           multiple
-          id="checkboxes-tags-demo"
+          id="select-months"
           options={months}
           disableCloseOnSelect
           getOptionLabel={(option) => option.name}
           value={selectedMonths}
           onChange={(_, inputMonths) => {
             setSelectedMonths(inputMonths)
-            console.log({inputMonths})
           }}
           renderOption={(option, { selected }) => (
             <React.Fragment>
@@ -476,7 +485,34 @@ const AllEvents = () => {
           )}
           style={{ width: 500 }}
           renderInput={(params) => (
-            <TextField {...params} variant="outlined" placeholder="Favorites" />
+            <TextField {...params} variant="outlined" placeholder="Months" />
+          )}
+        />
+        <p>Limit events to certain weekdays:</p>
+        <Autocomplete
+          multiple
+          id="select-weekdays"
+          options={weekdays}
+          disableCloseOnSelect
+          getOptionLabel={(option) => option.name}
+          value={selectedWeekdays}
+          onChange={(_, inputWeekdays) => {
+            setSelectedWeekdays(inputWeekdays)
+          }}
+          renderOption={(option, { selected }) => (
+            <React.Fragment>
+              <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                style={{ marginRight: 8 }}
+                checked={selected}
+              />
+              {option.name}
+            </React.Fragment>
+          )}
+          style={{ width: 500 }}
+          renderInput={(params) => (
+            <TextField {...params} variant="outlined" placeholder="Weekdays" />
           )}
         />
         <p>The GET_EVENTS GraphQL query is asking for this data:</p>

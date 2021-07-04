@@ -1,22 +1,28 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, gql } from "@apollo/client";
-import { Link, useHistory } from "react-router-dom";
+import { Link } from "react-router-dom";
+import Grid from "@material-ui/core/Grid";
+import { KeyboardDatePicker } from "@material-ui/pickers";
 const { DateTime } = require("luxon");
 
 const dateRangeTypes = {
   FUTURE: "FUTURE",
   PAST: "PAST",
-  BETWEEN_TWO_DATETIMES: "BETWEEN_TWO_DATETIMES",
+  BETWEEN_TWO_DATES: "BETWEEN_TWO_DATES",
+  CERTAIN_DATE: "CERTAIN_DATE",
 };
 
 const AllEvents = () => {
-  let history = useHistory();
   const now = DateTime.now();
+  const currentYear = now.year;
   const nowISO = now.toISO();
   const futureEventsFilter = `gt: "${nowISO}"`;
   const pastEventsFilter = `lt: "${nowISO}"`;
+
   const defaultStartDateObj = now.startOf("day");
   const defaultStartDateISO = defaultStartDateObj.toISO();
+  const defaultEndOfStartDayObj = defaultStartDateObj.endOf("day");
+  const defaultEndOfStartDayISO = defaultEndOfStartDayObj.toISO();
   const defaultEndDateRangeObj = defaultStartDateObj.plus({ days: 30 });
   const defaultEndDateRangeISO = defaultEndDateRangeObj.toISO();
 
@@ -24,8 +30,13 @@ const AllEvents = () => {
   const [startTimeFilter, setStartTimeFilter] = useState(futureEventsFilter);
   const [beginningOfDateRange, setBeginningOfDateRange] =
     useState(defaultStartDateISO);
-  const [endOfDateRange, setEndOfDateRange] = useState(defaultEndDateRangeObj);
-  const [limitResultsToOneDay, setLimitResultsToOneDay] = useState(false);
+  const [endOfDateRange, setEndOfDateRange] = useState(defaultEndDateRangeISO);
+
+  const [startOfCertainDay, setStartOfCertainDay] =
+    useState(defaultStartDateISO);
+  const [endOfCertainDay, setEndOfCertainDay] = useState(
+    defaultEndOfStartDayISO
+  );
 
   // Can be used to get events in non-contiguous years.
   const [requireYears, setRequireYears] = useState(false);
@@ -65,7 +76,8 @@ const AllEvents = () => {
 
   const [resultsOrder, setResultsOrder] = useState(chronologicalOrder);
 
-  const betweenDateTimesFilter = `between: { min: ${beginningOfDateRange}, max: ${endOfDateRange}}`;
+  const betweenDateTimesFilter = `between: { min: "${beginningOfDateRange}", max: "${endOfDateRange}"}`;
+  const certainDayFilter = `between: {min: "${startOfCertainDay}", max: "${endOfCertainDay}"}`;
   const certainYearsFilter = `startTimeYear: {anyofterms: "${Object.keys(
     years
   ).join(" ")}"}`;
@@ -140,28 +152,12 @@ const AllEvents = () => {
         )`;
     return eventFilterString;
   };
-  console.log(buildEventFilters());
 
   let eventFilters = buildEventFilters();
 
-  const useChronologicalOrder = () => {
-    setResultsOrder(chronologicalOrder);
-  };
-
-  const useReverseChronologicalOrder = () => {
-    setResultsOrder(reverseChronologicalOrder);
-  };
-
   const showPastEvents = () => {
     setStartTimeFilter(pastEventsFilter);
-  };
-
-  const showFutureEvents = () => {
-    setStartTimeFilter(futureEventsFilter);
-  };
-
-  const showEventsBetweenTwoDates = () => {
-    setStartTimeFilter(betweenDateTimesFilter);
+    setResultsOrder(reverseChronologicalOrder);
   };
 
   let GET_EVENTS = gql`
@@ -177,14 +173,9 @@ const AllEvents = () => {
   const { loading, error, data, refetch } = useQuery(GET_EVENTS);
 
   useEffect(() => {
-    // when limitResultsToOneDay is true,
-    // update the beginning and end date range
-  }, [limitResultsToOneDay]);
-
-  useEffect(() => {
     if (dateRange === dateRangeTypes.FUTURE) {
       setResultsOrder(chronologicalOrder);
-      showFutureEvents();
+      setStartTimeFilter(futureEventsFilter);
     }
     if (dateRange === dateRangeTypes.PAST) {
       setResultsOrder(reverseChronologicalOrder);
@@ -192,12 +183,14 @@ const AllEvents = () => {
     }
     if (dateRange === dateRangeTypes.BETWEEN_TWO_DATES) {
       setResultsOrder(chronologicalOrder);
-      showEventsBetweenTwoDates();
+      setStartTimeFilter(betweenDateTimesFilter);
+    }
+    if (dateRange === dateRangeTypes.CERTAIN_DATE) {
+      setResultsOrder(chronologicalOrder);
+      setStartTimeFilter(certainDayFilter);
     }
     refetch();
-  }, [
-    dateRange,
-  ]);
+  }, [dateRange, startOfCertainDay, beginningOfDateRange, endOfDateRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // The more complex date filters are within
   // this useEffect. For example, with these you can:
@@ -230,11 +223,11 @@ const AllEvents = () => {
 
   if (data && data.queryEvent) {
     const Events = data.queryEvent;
-    if (Events.length === 0) {
-      return <p>There are no events yet.</p>;
-    }
 
     const renderEventList = () => {
+      if (Events.length === 0) {
+        return <p>There are no events yet.</p>;
+      }
       return Events.map((event, i) => {
         const { id, title, startTime } = event;
 
@@ -246,6 +239,7 @@ const AllEvents = () => {
           const weekday = startTimeObj.weekdayLong;
           const month = startTimeObj.monthLong;
           const day = startTimeObj.day;
+          const year = startTimeObj.year;
 
           return {
             timeOfDay,
@@ -253,11 +247,10 @@ const AllEvents = () => {
             weekday,
             month,
             day,
+            year,
           };
         };
-        const { timeOfDay, zone, weekday, month, day } = getDatePieces();
-
-        const handleClick = () => history.push(`/event/${id}`);
+        const { timeOfDay, zone, weekday, month, day, year } = getDatePieces();
 
         let showDayHeader = false;
 
@@ -291,7 +284,9 @@ const AllEvents = () => {
           <div className="eventListItem" key={id}>
             <div className="row">
               {showDayHeader ? (
-                <div className="eventListHeader">{`${weekday}, ${month} ${day}`}</div>
+                <div className="eventListHeader">{`${weekday}, ${month} ${day}${
+                  year !== currentYear ? ", " + year : ""
+                }`}</div>
               ) : null}
             </div>
             <div className="row">
@@ -300,7 +295,7 @@ const AllEvents = () => {
               </div>
 
               <div className="col">
-                <div className="event-title" onClick={handleClick}>
+                <div className="event-title" o>
                   {title}
                 </div>
                 <div className="event-details">
@@ -320,8 +315,134 @@ const AllEvents = () => {
     return (
       <div className="container">
         <h1>All Events</h1>
-        <p>Build event filters returns:</p>
-        {buildEventFilters()}
+        <div className="event-filters">
+          <h2>
+            <i className="fas fa-sort"></i> Normal Date Range Options
+          </h2>
+          <p>
+            These options use normal Dgraph GraphQL DateTime filters.
+          </p>
+          <div className="form-check">
+            <input
+              className="form-check-input"
+              type="radio"
+              value={dateRangeTypes.FUTURE}
+              name="dateRangeType"
+              id="dateRangeType1"
+              checked={dateRange === dateRangeTypes.FUTURE}
+              onChange={(e) => {
+                setDateRange(e.target.value);
+              }}
+            />
+            <label className="form-check-label">Show future events</label>
+          </div>
+          <div className="form-check">
+            <input
+              className="form-check-input"
+              type="radio"
+              value={dateRangeTypes.PAST}
+              name="dateRangeType"
+              id="dateRangeType2"
+              checked={dateRange === dateRangeTypes.PAST}
+              onChange={(e) => {
+                setDateRange(e.target.value);
+              }}
+            />
+            <label className="form-check-label">Show past events</label>
+          </div>
+          <div className="form-check">
+            <input
+              className="form-check-input"
+              type="radio"
+              value={dateRangeTypes.BETWEEN_TWO_DATES}
+              name="dateRangeType"
+              id="dateRangeType3"
+              checked={dateRange === dateRangeTypes.BETWEEN_TWO_DATES}
+              onChange={(e) => {
+                setDateRange(e.target.value);
+              }}
+            />
+            <label className="form-check-label">
+              Show events between two dates
+            </label>
+          </div>
+          {dateRange === dateRangeTypes.BETWEEN_TWO_DATES ? (
+            <div className="date-pickers">
+              <Grid container justify="flex-start">
+                <KeyboardDatePicker
+                  disableToolbar
+                  variant="inline"
+                  margin="normal"
+                  format="cccc LLLL d"
+                  label="From"
+                  value={beginningOfDateRange}
+                  onChange={(newStartDateObj) => {
+                    const newStartDateISO = newStartDateObj.toISO();
+                    setBeginningOfDateRange(newStartDateISO);
+                  }}
+                />
+                <KeyboardDatePicker
+                  disableToolbar
+                  variant="inline"
+                  margin="normal"
+                  format="cccc LLLL d"
+                  label="To"
+                  value={endOfDateRange}
+                  onChange={(newEndDateObj) => {
+                    const newEndDateISO = newEndDateObj.toISO();
+                    setEndOfDateRange(newEndDateISO);
+                  }}
+                />
+              </Grid>
+            </div>
+          ) : null}
+          <div className="form-check">
+            <input
+              className="form-check-input"
+              type="radio"
+              value={dateRangeTypes.CERTAIN_DATE}
+              name="dateRangeType"
+              id="dateRangeType4"
+              checked={dateRange === dateRangeTypes.CERTAIN_DATE}
+              onChange={(e) => {
+                setDateRange(e.target.value);
+              }}
+            />
+            <label className="form-check-label">
+              Show events on certain date
+            </label>
+          </div>
+          {dateRange === dateRangeTypes.CERTAIN_DATE ? (
+            <div className="date-pickers">
+              <KeyboardDatePicker
+                disableToolbar
+                variant="inline"
+                margin="normal"
+                format="cccc LLLL d"
+                label="Show events on this date"
+                value={startOfCertainDay}
+                onChange={(dateObj) => {
+                  const startOfDayObj = dateObj.startOf("day");
+                  const startOfDayISO = startOfDayObj.toISO();
+                  setStartOfCertainDay(startOfDayISO);
+                  const endOfDayObj = dateObj.endOf("day");
+                  const endOfDayISO = endOfDayObj.toISO();
+                  setEndOfCertainDay(endOfDayISO);
+                }}
+              />
+            </div>
+          ) : null}
+          <h2>
+            <i className="fas fa-sort"></i> Advanced Date Range Options
+          </h2>
+          <p>
+            These options can filter events by multiple windows of time with
+            non-contiguous years, months, days, weekdays and hour ranges, which
+            are not natively supported by Dgraph's DateTime filters.
+          </p>
+        </div>
+        <p>The GET_EVENTS GraphQL query is asking for this data:</p>
+        {"query {queryEvent" + buildEventFilters() + "{ id title startTime }}"}
         {renderEventList()}
       </div>
     );

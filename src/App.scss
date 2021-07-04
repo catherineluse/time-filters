@@ -1,0 +1,941 @@
+
+@import url("https://fonts.googleapis.com/css?family=IBM+Plex+Sans:regular,bold,italic&subset=latin,latin-ext");
+
+html,
+body {
+  height: 100%;
+}
+
+body {
+  display: flex;
+  flex-direction: column;
+}
+
+h1 {
+  font-family: Fira Sans, sans-serif;
+  padding-top: 20px;
+  font-size: 24px;
+  a {
+    color: rgb(27, 141, 107);
+  }
+}
+
+h2 {
+  font-family: "IBM Plex Sans", sans-serif;
+  color: #0d2629;
+  font-size: 20px;
+  margin-bottom: 5px;
+}
+
+h3 {
+  font-size: 20px;
+}
+
+a {
+  color: black;
+  font-size: inherit;
+  &:hover {
+    text-decoration: none;
+    color: inherit;
+  }
+}
+
+.spacer {
+  height: 20px;
+}
+
+form {
+  h2 {
+    font-size: 20px;
+    margin-top: 35px;
+    margin-bottom: 10px;
+    font-family: Fira Sans;
+    width: 100%;
+    color: rgb(27, 141, 107);
+    border-bottom: 1px solid #089e7e;
+  }
+  .form-check {
+    vertical-align: middle;
+  }
+  .location-fields {
+    width: 100%;
+  }
+  label {
+    color: gray;
+  }
+}
+
+button {
+  font-size: 14px;
+  border: 0;
+  padding: 0;
+}
+
+hr {
+  .solid {
+    border-top: 1px solid gray;
+  }
+}
+
+p {
+  font-size: 14px;
+  padding: 0;
+  margin: 0;
+  .form-validation-error {
+    padding-top: 20px;
+  }
+}
+
+footer {
+  text-align: center;
+  background-color: rgb(235, 235, 235);
+  width: 100%;
+  padding: 10px;
+  bottom: 0;
+  margin-top: 50px;
+  border-top: gray;
+  color: rgb(27, 141, 107);
+  font-size: 10px;
+  flex-shrink: 0;
+  a {
+    color: gray;
+    &:hover {
+      text-decoration: none;
+    }
+  }
+}
+
+*:focus {
+  outline: none;
+}
+
+.hidden {
+  display: none;
+}
+
+.form-row,
+.form-group {
+  width: 100%;
+}
+
+.communityUrl {
+  font-family: "Fira Mono";
+  font-size: 12px;
+  color: gray;
+  padding: 0;
+  margin-top: 0;
+  display: block;
+}
+
+.sidenav {
+  height: 100%;
+  width: 220px;
+  position: fixed;
+  z-index: 2;
+  top: 43px;
+  bottom: 0;
+  left: 0;
+  background-color: #e8faf2;
+  padding: 0;
+  display: block;
+  font-family: Fira Sans;
+  overflow: scroll;
+  a {
+    text-decoration: none;
+    font-size: 14px;
+    color: rgb(27, 141, 107);
+    display: inline-block;
+    padding-left: 20px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    padding-right: 20px;
+    width: 100%;
+    &:hover {
+      color: white;
+      background-color: rgb(27, 141, 107);
+      text-decoration: none;
+    }
+  }
+  li {
+    list-style-type: none;
+  }
+  Link {
+    color: #6fdeb0;
+    float: right;
+    padding-right: 10px;
+  }
+  .closeButtonInSideNav {
+    cursor: pointer;
+    float: right;
+    color: gray;
+    font-size: 24px;
+    padding-right: 10px;
+    &:hover {
+      color: black;
+    }
+  }
+  .sideNavItemChild {
+    padding-left: 15px;
+    a {
+      padding-top: 0px;
+      padding-bottom: 0px;
+    }
+  }
+}
+
+.mainContent {
+  display: inline-block;
+  margin-top: 50px;
+  margin-bottom: 40px;
+  flex: 1 0 auto;
+}
+
+.topnav {
+  background-color: white;
+  display: inline-block;
+  width: 100%;
+  border-bottom: 1px solid lightgray;
+  margin-bottom: 0;
+  z-index: 1;
+  position: fixed;
+  padding: 6px;
+  li {
+    display: inline;
+    a {
+      float: left;
+      display: block;
+      text-align: center;
+      text-decoration: none;
+      font-size: 20px;
+      padding: 0;
+      &:hover {
+        text-decoration: none;
+      }
+    }
+  }
+  button {
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 3px;
+    padding-bottom: 3px;
+  }
+  .sitename {
+    font-family: "Fira Mono";
+    float: left;
+    color: black;
+    text-align: center;
+    margin-left: 5px;
+    text-decoration: none;
+    margin-right: 10px;
+    font-size: 18px;
+    padding-top: 3px;
+    cursor: pointer;
+  }
+  .toggleSideNavButton {
+    cursor: pointer;
+    float: left;
+    display: block;
+    color: darkgray;
+    display: inline;
+    text-align: center;
+    padding-top: 3px;
+    padding-left: 10px;
+    text-decoration: none;
+    font-size: 17px;
+    &:hover {
+      color: black;
+    }
+  }
+}
+
+.logo {
+  margin-right: 7px;
+  color: white;
+}
+.icon-background {
+  color: #42bda0;
+  display: block;
+}
+.site-logo {
+  float: left;
+  text-align: center;
+  padding-left: 10px;
+  text-decoration: none;
+  margin-right: 0px;
+  font-size: 10px;
+  padding-top: 3px;
+}
+
+.profile {
+  padding: 15px;
+}
+
+.profile-img {
+  display: block;
+  margin: 0 auto;
+  border-radius: 50%;
+}
+
+.community-info {
+  color: gray;
+  font-size: 12px;
+}
+
+.event-details {
+  font-family: "Fira Sans", sans-serif;
+  font-size: 12px;
+  color: gray;
+}
+
+.communityHeader {
+  margin-top: 30px;
+  padding-left: 15px;
+  .communityNameBar {
+    margin-bottom: 10px;
+  }
+  .communityDescription {
+    font-size: 16px;
+    font-family: IBM Plex Sans, sans-serif;
+    color: black;
+  }
+}
+
+.date-pickers {
+  margin-left: 30px;
+}
+
+.communityBody {
+  .communitySideNav {
+    height: 100%;
+    width: 220px;
+    position: fixed;
+    top: 0;
+    left: 0;
+    overflow-x: hidden;
+    padding-top: 30px;
+    background-color: rgb(248, 248, 248);
+  }
+  .communityActiveSection {
+    margin-left: 220px;
+    padding: 0px 10px;
+  }
+  .section-list {
+    font-size: 100px;
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+    a {
+      font-size: 16px;
+      display: block;
+      padding-left: 15px;
+      padding-right: 15px;
+      padding-top: 10px;
+      padding-bottom: 10px;
+      font-size: 14px;
+      color: gray;
+      width: 100%;
+      &.active {
+        color: black;
+        background-color: rgb(235, 235, 235);
+        border-right: 2px solid #6fdeb0;
+      }
+      &:hover {
+        color: black;
+        background-color: rgb(235, 235, 235);
+        border-right: 2px solid #6fdeb0;
+        text-decoration: none;
+      }
+    }
+  }
+  .communitySections {
+    width: 100%;
+    a {
+      float: left;
+      font-size: 16px;
+      display: block;
+      padding-top: 5px;
+      padding-bottom: 5px;
+      font-size: 14px;
+      color: gray;
+      margin-right: 10px;
+      width: 100%;
+    }
+    .communitySectionTitle {
+      font-family: "Fira Sans";
+      font-size: 14px;
+      cursor: pointer;
+      padding-right: 15px;
+    }
+  }
+
+  .discussionList {
+    padding: 0;
+    margin-bottom: 10px;
+    .discussionListItem {
+      padding-bottom: 8px;
+      background-color: white;
+      border-left: 2px solid white;
+      border-bottom: 1px solid lightgray;
+      .created-date {
+        margin-right: 5px;
+        color: black;
+        &:hover {
+          text-decoration: none;
+          cursor: default;
+        }
+      }
+    }
+    .emptyNotice {
+      padding-left: 10px;
+      margin-top: 20px;
+      font-size: 14px;
+    }
+  }
+  .discussionTitle {
+    font-size: 20px;
+    padding-top: 10px;
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+
+  .discussionLinks {
+    font-size: 10px;
+    color: #538f71;
+    padding-left: 10px;
+    padding-right: 10px;
+    padding-top: 5px;
+    padding-bottom: 5px;
+  }
+  .box {
+    width: 100%;
+    margin-bottom: 10px;
+    margin: 15px;
+    .boxContent {
+      font-size: 14px;
+      font-family: IBM Plex Sans, sans-serif;
+      color: black;
+    }
+  }
+}
+
+.event-filters {
+  margin-top: 5px;
+  margin-bottom: 20px;
+  .checkboxes {
+    margin-left: 15px;
+  }
+  label {
+    font-family: Arial;
+    font-size: 12px;
+  }
+  i {
+    color: #089e7e;
+  }
+  h2 {
+    margin-top: 15px;
+    color: #089e7e;
+    margin-bottom: 10px;
+    font-family: Fira Sans;
+    font-size: 14px;
+    border-bottom: 1px solid lightgray;
+  }
+}
+
+.event-list-buttons {
+  list-style-type: none;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  vertical-align: middle;
+
+  li {
+    float: left;
+    text-decoration: none;
+    
+    select {
+      margin-right: 4px;
+      margin-top: 5px;
+      padding: 4px;
+      border-radius: 5px;
+      font-size: 14px;
+      &:hover {
+        border: 1px solid #6fdeb0;
+        background-color: rgb(245, 255, 252);
+      }
+      &:active {
+        border: 1px solid #6fdeb0;
+        background-color: rgb(245, 255, 252);
+      }
+    }
+  }
+  button {
+    display: block;
+    text-decoration: none;
+  }
+}
+
+.communityActionButton {
+  font-size: 14px;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  padding-left: 10px;
+  padding-right: 10px;
+  margin-right: 5px;
+  margin-top: 5px;
+  text-align: left;
+  border: 1px solid rgb(202, 200, 200);
+  background-color: rgb(245, 242, 242);
+  border-radius: 5px;
+  &:hover {
+    border: 1px solid #6fdeb0;
+    background-color: rgb(245, 255, 252);
+  }
+  &:active {
+    border: 1px solid #6fdeb0;
+    background-color: rgb(245, 255, 252);
+  }
+}
+
+.showingEventFilters {
+  border: 1px solid #6fdeb0;
+  background-color: rgb(245, 255, 252);
+}
+
+.quoted-comment {
+  font-style: italic;
+  color: gray;
+  margin: 15px;
+}
+
+.pageTitle {
+  color: rgb(63, 60, 60);
+  font-family: "Fira Mono";
+  text-transform: uppercase;
+  font-size: 12px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  width: 100%;
+  border-bottom: 1px solid rgb(182, 180, 180);
+}
+.eventSectionTitle {
+  font-family: "Fira Sans";
+  font-size: 20px;
+  border-radius: 5px;
+  margin-top: 20px;
+  color: rgb(128, 126, 126);
+}
+
+.backButton {
+  color: rgb(63, 60, 60);
+  font-family: "Fira Mono";
+  text-transform: uppercase;
+  font-size: 12px;
+  a {
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  &:hover {
+    cursor: pointer;
+  }
+}
+
+.event-filter {
+  font-size: 14px;
+  display: block;
+}
+
+.eventListItem {
+  padding-bottom: 8px;
+  padding-top: 8px;
+  background-color: white;
+  border-left: 2px solid white;
+  width: 100%;
+  .event-title {
+    font-size: 20px;
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+  .eventDetail {
+    color: gray;
+  }
+  .eventListHeader {
+    width: 100%;
+    border-bottom: 1px solid lightgray;
+    padding-left: 15px;
+    font-family: "Fira Sans", sans-serif;
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #089e7e;
+  }
+  .event-date {
+    padding-top: 4px;
+    font-size: 14px;
+    text-align: left;
+  }
+  .month {
+    font-size: 10px;
+    text-transform: uppercase;
+  }
+  .day-of-week {
+    font-size: 14px;
+  }
+  .calendar-day {
+    margin-top: -8px;
+    font-size: 24px;
+    margin-bottom: -5px;
+  }
+}
+
+.eventPage {
+  h1 {
+    font-family: "Fira Sans";
+    font-size: 30px;
+    border-radius: 5px;
+    color: #848887;
+  }
+  table {
+    margin-top: 10px;
+    font-size: 14px;
+  }
+  table,
+  tr,
+  td {
+    background-color: white;
+    border: none;
+  }
+  .pastEventNotice {
+    background-color: rgb(255, 249, 197);
+    color: rgb(87, 56, 50);
+    padding: 7px;
+  }
+  .placeLink {
+    color: rgb(27, 141, 107);
+    font-size: 14px;
+  }
+  .event-note {
+    padding-left: 22px;
+  }
+  .eventBody {
+    font-size: 16px;
+    padding-bottom: 15px;
+    padding-left: 15px;
+    padding-right: 10px;
+  }
+  .time-zone {
+    color: gray;
+    font-size: 12px;
+  }
+  .organizer {
+    font-size: 12px;
+  }
+  .organizerLink {
+    color: rgb(27, 141, 107);
+    cursor: pointer;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+  .details {
+    font-size: 16px;
+    i {
+      margin-right: 10px;
+    }
+    p {
+      font-family: "Fira Sans";
+    }
+  }
+  .event-footer {
+    margin-top: 10px;
+    padding-bottom: 5px;
+    color: gray;
+
+    .created-date {
+      color: rgb(109, 106, 106);
+      font-size: 12px;
+      font-weight: 400;
+      font-style: italic;
+    }
+  }
+}
+
+.options-button {
+  float: right;
+}
+
+.discussionAuthor {
+  font-size: 12px;
+  font-family: "Fira Sans";
+  a,
+  span {
+    color: #538f71;
+    &:hover {
+      cursor: pointer;
+      text-decoration: underline;
+    }
+  }
+}
+
+.discussionPage {
+
+  .discussionBody {
+    font-size: 16px;
+    padding: 10px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    border-radius: 5px;
+    background-color: ghostwhite;
+    h2 {
+      margin-top: 0;
+    }
+  }
+
+  .created-date {
+    color: rgb(109, 106, 106);
+    font-size: 10px;
+    font-weight: 400;
+    font-style: italic;
+  }
+}
+
+.understatedLink {
+  color: inherit;
+  margin-right: 5px;
+  color: rgb(27, 141, 107);
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
+.communityList {
+  padding: 0;
+  margin-bottom: 10px;
+  margin-left: 15px;
+  .communityListItem {
+    background-color: white;
+    padding-bottom: 10px;
+    border-radius: 5px;
+    font-size: 18px;
+    border-bottom: 1px solid lightgray;
+    border-top: 1px solid lightgray;
+    padding-bottom: 6px;
+    .site-logo {
+      font-size: 25px;
+      max-height: 100%;
+      .icon-background {
+        color: lightgray;
+      }
+    }
+    .community-icon {
+      display: block;
+    }
+    .communityDescription {
+      font-size: 10px;
+    }
+    &:hover {
+      cursor: pointer;
+    }
+    h2 {
+      padding-top: 0;
+      margin-top: 10px;
+    }
+  }
+  > li {
+    font-family: IBM Plex Sans, sans-serif;
+    padding-left: 0;
+  }
+}
+
+.hidden {
+  display: none;
+}
+
+.emoji-list {
+  font-size: 18px;
+  button {
+    background-color: rgb(250, 246, 246);
+  }
+}
+
+.community {
+  margin: 0;
+  padding: 0;
+}
+
+.rootCommentSubmit {
+  margin-top: 0px;
+}
+
+.thread {
+  border-left: 1px solid rgb(182, 180, 180);
+  .child-comment-list {
+    margin-left: 10px;
+    border-left: 1px solid rgb(182, 180, 180);
+  }
+}
+
+.permalinked {
+  background-color: rgb(243, 251, 252);
+}
+
+.tip {
+  font-size: 12px;
+}
+
+.commentSection {
+  margin-top: 10px;
+  font-size: 12px;
+  a {
+    color: gray;
+    margin-right: 10px;
+    &:hover {
+      color: rgb(27, 141, 107);
+      text-decoration: underline;
+    }
+  }
+  .created-date {
+    color: rgb(172, 169, 169);
+    font-size: 10px;
+    font-weight: 400;
+    font-style: italic;
+  }
+  .comment {
+    border-top: 1px solid white;
+    border-bottom: 1px solid white;
+    padding-left: 5px;
+    padding-top: 5px;
+    h1 {
+      color: black;
+    }
+    h2 {
+      color: black;
+    }
+    a {
+      margin-bottom: 10px;
+      &:hover {
+        color: rgb(27, 141, 107);
+        text-decoration: underline;
+      }
+    }
+    table {
+      font-size: 12px;
+    }
+    .deleted {
+      color: gray;
+    }
+
+    .comment-author {
+      font-weight: 400;
+      margin-right: 5px;
+      margin-top: 5px;
+      font-size: 12px;
+      color: rgb(27, 141, 107);
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+    .comment-context {
+      color: gray;
+    }
+    .commentText {
+      font-family: IBM Plex Sans;
+      padding: 0;
+      font-size: 14px;
+      font-weight: normal;
+      &:hover {
+        cursor: pointer;
+      }
+    }
+    .comment-buttons {
+      font-weight: 400;
+    }
+    .comment-button {
+      display: inline-block;
+      font-size: 10px;
+      margin-right: 10px;
+      cursor: pointer;
+      color: rgb(170, 168, 168);
+      &:hover {
+        color: #53bda0;
+        text-decoration: underline;
+      }
+      i {
+        margin-right: 5px;
+      }
+    }
+    .toggled-comment-buttons {
+      display: inline-block;
+    }
+    .comment-emoji {
+      display: inline-block;
+      .emoji-count {
+        background-color: #f1f1f1;
+        font-size: 14px;
+        font-weight: 400;
+        float: right;
+        .emoji-count-number {
+          font-size: 12px;
+        }
+      }
+      .highlighted {
+        background-color: #f0fff2;
+        border: 1px solid #8df09d;
+      }
+      button {
+        border-radius: 10px 10px 10px 10px;
+        padding: 2px;
+        margin-right: 3px;
+        &:hover {
+          background-color: #d4f7e3;
+        }
+      }
+    }
+  }
+}
+
+.reaction-description {
+  color: rgb(182, 180, 180);
+}
+
+.tag {
+  margin-right: 5px;
+  font-size: 10px;
+  padding-top: 1px;
+  padding-left: 2px;
+  padding-right: 2px;
+  font-weight: normal;
+  border-radius: 2px;
+}
+
+.admin-tag {
+  border: 1px solid #fc1703;
+  color: #fc1703;
+  background-color: #fff6f5;
+}
+
+.organizer-tag {
+  border: 1px solid #b2c6f7;
+  background-color: #f5f8ff;
+  color: #054efa;
+}
+
+.moderator-tag {
+  border: 1px solid #b2c6f7;
+  background-color: #f5f8ff;
+  color: #054efa;
+}
+
+.original-poster-tag {
+  border: 1px solid #8df09d;
+  background-color: #f0fff2;
+  color: #00c220;
+}
+
+.powered-by-google {
+  margin-top: 5px;
+}

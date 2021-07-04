@@ -1,5 +1,4 @@
-import logo from "./logo.svg";
-import "./App.css";
+import "./App.scss";
 import { Switch, Route, Router } from "react-router-dom";
 import EventList from "./EventList";
 import EventDetail from "./EventDetail";

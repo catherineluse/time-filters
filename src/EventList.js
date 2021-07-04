@@ -57,7 +57,39 @@ const weekdays = [
   { number: "7", name: "Saturday" },
 ];
 
-const daysOfTheMonth = ["1", "2", "3", "4", "5", "6", "7", "8", "9"]
+const daysOfTheMonth = [
+  "1",
+  "2",
+  "3",
+  "4",
+  "5",
+  "6",
+  "7",
+  "8",
+  "9",
+  "10",
+  "11",
+  "12",
+  "13",
+  "14",
+  "15",
+  "16",
+  "17",
+  "18",
+  "19",
+  "20",
+  "21",
+  "22",
+  "23",
+  "24",
+  "25",
+  "26",
+  "27",
+  "28",
+  "29",
+  "30",
+  "31",
+];
 
 const AllEvents = () => {
   const now = DateTime.now();
@@ -121,12 +153,14 @@ const AllEvents = () => {
 
   const betweenDateTimesFilter = `between: { min: "${beginningOfDateRange}", max: "${endOfDateRange}"}`;
   const certainDayFilter = `between: {min: "${startOfCertainDay}", max: "${endOfCertainDay}"}`;
-  const certainYearsFilter = `startTimeYear: {anyofterms: "${selectedYears.join(" ")}"}`;
+  const certainYearsFilter = `startTimeYear: {anyofterms: "${selectedYears.join(
+    " "
+  )}"}`;
   const certainMonthsFilter = `startTimeMonth: {anyofterms: "${selectedMonths
     .map((e) => e.number)
     .join(" ")}"}`;
   const certainDaysOfMonthFilter = `startTimeDayOfMonth: {anyofterms: "${selectedDaysOfMonth.join(
-    ""
+    " "
   )}"}`;
   const certainWeekdaysFilter = `startTimeDayOfWeek: {anyofterms: "${selectedWeekdays
     .map((e) => e.name)
@@ -533,6 +567,37 @@ const AllEvents = () => {
           style={{ width: 500 }}
           renderInput={(params) => (
             <TextField {...params} variant="outlined" placeholder="Months" />
+          )}
+        />
+        <p>Limit events to certain days of the month:</p>
+        <Autocomplete
+          multiple
+          id="select-days-of-month"
+          options={daysOfTheMonth}
+          disableCloseOnSelect
+          getOptionLabel={(option) => option}
+          value={selectedDaysOfMonth}
+          onChange={(_, inputDaysOfMonth) => {
+            setSelectedDaysOfMonth(inputDaysOfMonth);
+          }}
+          renderOption={(option, { selected }) => (
+            <React.Fragment>
+              <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                style={{ marginRight: 8 }}
+                checked={selected}
+              />
+              {option}
+            </React.Fragment>
+          )}
+          style={{ width: 500 }}
+          renderInput={(params) => (
+            <TextField
+              {...params}
+              variant="outlined"
+              placeholder="Days of the month"
+            />
           )}
         />
         <p>Limit events to certain weekdays:</p>

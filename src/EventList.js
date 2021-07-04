@@ -8,6 +8,7 @@ import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import CheckBoxOutlineBlankIcon from "@material-ui/icons/CheckBoxOutlineBlank";
 import CheckBoxIcon from "@material-ui/icons/CheckBox";
+import { years, months, daysOfTheMonth, weekdays, hourRangesData } from "./eventSearchOptions";
 
 const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
 const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -19,77 +20,6 @@ const dateRangeTypes = {
   BETWEEN_TWO_DATES: "BETWEEN_TWO_DATES",
   CERTAIN_DATE: "CERTAIN_DATE",
 };
-
-const years = [
-  "2015",
-  "2016",
-  "2017",
-  "2018",
-  "2019",
-  "2020",
-  "2021",
-  "2022",
-  "2023",
-];
-
-const months = [
-  { number: "1", name: "January" },
-  { number: "2", name: "February" },
-  { number: "3", name: "March" },
-  { number: "4", name: "April" },
-  { number: "5", name: "May" },
-  { number: "6", name: "June" },
-  { number: "7", name: "July" },
-  { number: "8", name: "August" },
-  { number: "9", name: "September" },
-  { number: "10", name: "October" },
-  { number: "11", name: "November" },
-  { number: "12", name: "December" },
-];
-
-const weekdays = [
-  { number: "1", name: "Sunday" },
-  { number: "2", name: "Monday" },
-  { number: "3", name: "Tuesday" },
-  { number: "4", name: "Wednesday" },
-  { number: "5", name: "Thursday" },
-  { number: "6", name: "Friday" },
-  { number: "7", name: "Saturday" },
-];
-
-const daysOfTheMonth = [
-  "1",
-  "2",
-  "3",
-  "4",
-  "5",
-  "6",
-  "7",
-  "8",
-  "9",
-  "10",
-  "11",
-  "12",
-  "13",
-  "14",
-  "15",
-  "16",
-  "17",
-  "18",
-  "19",
-  "20",
-  "21",
-  "22",
-  "23",
-  "24",
-  "25",
-  "26",
-  "27",
-  "28",
-  "29",
-  "30",
-  "31",
-];
 
 const AllEvents = () => {
   const now = DateTime.now();
@@ -134,10 +64,7 @@ const AllEvents = () => {
   // non-contiguous weekdays.
   const [selectedWeekdays, setSelectedWeekdays] = useState([]);
 
-  const [requireRangeOfHours, setRequireRangeOfHours] = useState(false);
-  const [beginningOfHourRange, setBeginningOfHourRange] =
-    useState(defaultStartDateISO);
-  const [endOfHourRange, setEndOfHourRange] = useState(defaultEndDateRangeISO);
+  const [selectedHourRanges, setSelectedHourRanges] = useState([]);
 
   const [requireAvailabilityWindows, setRequireAvailabilityWindows] =
     useState(false);
@@ -165,7 +92,22 @@ const AllEvents = () => {
   const certainWeekdaysFilter = `startTimeDayOfWeek: {anyofterms: "${selectedWeekdays
     .map((e) => e.name)
     .join(" ")}"}`;
-  const certainRangeOfHoursFilter = `startTimeHourOfDay: {between: {min: ${beginningOfHourRange},max: ${endOfHourRange}}}}`;
+
+  const getRangeOfHoursFilter = () => {
+    if (selectedHourRanges === 0){
+      return ""
+    }
+    if (selectedHourRanges.length === 1){
+      const range = selectedHourRanges[0]
+      return `startTimeHourOfDay: {between: {min: ${range.min},max: ${range.max}}}`;
+    }
+    const rangeObjects = selectedHourRanges.map(range => {
+      return `{startTimeHourOfDay: {between: {min: ${range.min}, max: ${range.max}}}}`
+    })
+    return `and: {or: [${rangeObjects}]}`
+  }
+  
+
   const availabilityWindowsFilter = () => {
     if (!availabilityWindows) {
       return "";
@@ -198,11 +140,13 @@ const AllEvents = () => {
       certainDaysOfMonthFilter,
       certainMonthsFilter,
       certainWeekdaysFilter,
+      hourRangeFilter: getRangeOfHoursFilter()
     });
     console.log({
       selectedDaysOfMonth,
       selectedMonths,
       selectedWeekdays,
+      selectedHourRanges
     });
     let eventFilterString = `(
           order: ${resultsOrder},
@@ -215,7 +159,7 @@ const AllEvents = () => {
             ${selectedMonths.length > 0 ? certainMonthsFilter : ""}
             ${selectedDaysOfMonth.length > 0 ? certainDaysOfMonthFilter : ""}
             ${selectedWeekdays.length > 0 ? certainWeekdaysFilter : ""}
-            ${requireRangeOfHours ? certainRangeOfHoursFilter : ""}
+            ${selectedHourRanges.length > 0 ? getRangeOfHoursFilter() : ""}
             ${requireAvailabilityWindows ? availabilityWindowsFilter() : ""}
           }
         )`;
@@ -282,8 +226,7 @@ const AllEvents = () => {
     selectedMonths,
     selectedDaysOfMonth,
     selectedWeekdays,
-    beginningOfHourRange,
-    endOfHourRange,
+    selectedHourRanges,
   ]);
 
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
@@ -625,6 +568,33 @@ const AllEvents = () => {
           style={{ width: 500 }}
           renderInput={(params) => (
             <TextField {...params} variant="outlined" placeholder="Weekdays" />
+          )}
+        />
+        <p>Limit events to certain time ranges:</p>
+        <Autocomplete
+          multiple
+          id="select-time-ranges"
+          options={hourRangesData}
+          disableCloseOnSelect
+          getOptionLabel={(option) => option["12-hour-label"]}
+          value={selectedHourRanges}
+          onChange={(_, inputHourRanges) => {
+            setSelectedHourRanges(inputHourRanges);
+          }}
+          renderOption={(option, { selected }) => (
+            <React.Fragment>
+              <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                style={{ marginRight: 8 }}
+                checked={selected}
+              />
+              {option["12-hour-label"]}
+            </React.Fragment>
+          )}
+          style={{ width: 500 }}
+          renderInput={(params) => (
+            <TextField {...params} variant="outlined" placeholder="Hour ranges" />
           )}
         />
         <p>The GET_EVENTS GraphQL query is asking for this data:</p>

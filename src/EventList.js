@@ -3,6 +3,14 @@ import { useQuery, gql } from "@apollo/client";
 import { Link } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import { KeyboardDatePicker } from "@material-ui/pickers";
+import Checkbox from "@material-ui/core/Checkbox";
+import TextField from "@material-ui/core/TextField";
+import Autocomplete from "@material-ui/lab/Autocomplete";
+import CheckBoxOutlineBlankIcon from '@material-ui/icons/CheckBoxOutlineBlank';
+import CheckBoxIcon from "@material-ui/icons/CheckBox";
+
+const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+const checkedIcon = <CheckBoxIcon fontSize="small" />;
 const { DateTime } = require("luxon");
 
 const dateRangeTypes = {
@@ -11,6 +19,21 @@ const dateRangeTypes = {
   BETWEEN_TWO_DATES: "BETWEEN_TWO_DATES",
   CERTAIN_DATE: "CERTAIN_DATE",
 };
+
+const months = [
+  { number: "1", name: "January"},
+  { number: "2", name: "February"},
+  { number: "3", name: "March"},
+  { number: "4", name: "April"},
+  { number: "5", name: "May"},
+  { number: "6", name: "June"},
+  { number: "7", name: "July"},
+  { number: "8", name: "August"},
+  { number: "9", name: "September"},
+  { number: "10", name: "October"},
+  { number: "11", name: "November"},
+  { number: "12", name: "December"},
+];
 
 const AllEvents = () => {
   const now = DateTime.now();
@@ -44,28 +67,24 @@ const AllEvents = () => {
 
   // Get events from a specific month across multiple years,
   // or non-contiguous months, like April and June but not May.
-  const [requireMonths, setRequireMonths] = useState(false);
-  const [months, setMonths] = useState({});
+  const [selectedMonths, setSelectedMonths] = useState([]);
 
   // Can be combined with month to get events that happen
   // on a certain day without specifying the year, or events
   // that happen on non-contiguous days.
-  const [requireDaysOfMonth, setRequireDaysOfMonth] = useState(false);
-  const [daysOfMonth, setDaysOfMonth] = useState({});
+  const [selectedDaysOfMonth, setSelectedDaysOfMonth] = useState([]);
 
   // Can be used to get events that happen on certain weekdays
   // across a longer time period, or across multiple
   // non-contiguous weekdays.
-  const [requireWeekdays, setRequireWeekdays] = useState(false);
-  const [weekdays, setWeekdays] = useState({});
+  const [selectedWeekdays, setSelectedWeekdays] = useState([]);
 
-  const [requireRangeOfHours, setRequireRangeOfHours] = useState(false);
+  const [requireRangeOfHours, setRequireRangeOfHours] = useState(false)
   const [beginningOfHourRange, setBeginningOfHourRange] =
     useState(defaultStartDateISO);
-  const [endOfHourRange, setEndOfHourRange] = useState(defaultEndDateRangeObj);
+  const [endOfHourRange, setEndOfHourRange] = useState(defaultEndDateRangeISO);
 
-  const [requireAvailabilityWindows, setRequireAvailabilityWindows] =
-    useState(false);
+  const [requireAvailabilityWindows, setRequireAvailabilityWindows] = useState(false)
   const [availabilityWindows, setAvailabilityWindows] = useState({});
 
   const [resultsPerPage, setResultsPerPage] = useState(10);
@@ -78,16 +97,10 @@ const AllEvents = () => {
 
   const betweenDateTimesFilter = `between: { min: "${beginningOfDateRange}", max: "${endOfDateRange}"}`;
   const certainDayFilter = `between: {min: "${startOfCertainDay}", max: "${endOfCertainDay}"}`;
-  const certainYearsFilter = `startTimeYear: {anyofterms: "${Object.keys(
-    years
-  ).join(" ")}"}`;
-  const certainMonthsFilter = `startTimeMonth: {anyofterms: "${Object.keys(
-    months
-  ).join("")}"}`;
-  const certainDaysOfMonthFilter = `startTimeDayOfMonth: {anyofterms: "${Object.keys(
-    daysOfMonth
-  ).join("")}"}`;
-  const certainWeekdaysFilter = `startTimeDayOfWeek: {anyofterms: "${weekdays}"}`;
+  const certainYearsFilter = `startTimeYear: {anyofterms: "${years}"`;
+  const certainMonthsFilter = `startTimeMonth: {anyofterms: "${selectedMonths.map(e => e.number).join(" ")}"}`;
+  const certainDaysOfMonthFilter = `startTimeDayOfMonth: {anyofterms: "${selectedDaysOfMonth.join("")}"}`;
+  const certainWeekdaysFilter = `startTimeDayOfWeek: {anyofterms: "${selectedWeekdays}"}`;
   const certainRangeOfHoursFilter = `startTimeHourOfDay: {between: {min: ${beginningOfHourRange},max: ${endOfHourRange}}}}`;
   const availabilityWindowsFilter = () => {
     if (!availabilityWindows) {
@@ -116,25 +129,17 @@ const AllEvents = () => {
     return windowsFilter;
   };
 
-  const toggleRequireAvailabilityWindows = () => {
-    if (requireAvailabilityWindows) {
-      setRequireYears(true);
-      setRequireMonths(true);
-      setRequireDaysOfMonth(true);
-      setRequireWeekdays(true);
-      setRequireRangeOfHours(true);
-      setRequireAvailabilityWindows(false);
-    } else {
-      setRequireYears(false);
-      setRequireMonths(false);
-      setRequireDaysOfMonth(false);
-      setRequireWeekdays(false);
-      setRequireRangeOfHours(false);
-      setRequireAvailabilityWindows(true);
-    }
-  };
-
   const buildEventFilters = () => {
+    console.log({
+      certainDaysOfMonthFilter,
+      certainMonthsFilter,
+      certainWeekdaysFilter
+    })
+    console.log({
+      selectedDaysOfMonth,
+      selectedMonths,
+      selectedWeekdays
+    })
     let eventFilterString = `(
           order: ${resultsOrder},
           first: ${resultsPerPage},
@@ -143,9 +148,9 @@ const AllEvents = () => {
                 ${startTimeFilter}
             },
             ${requireYears ? certainYearsFilter : ""}
-            ${requireMonths ? certainMonthsFilter : ""}
-            ${requireDaysOfMonth ? certainDaysOfMonthFilter : ""}
-            ${requireWeekdays ? certainWeekdaysFilter : ""}
+            ${selectedMonths.length > 0 ? certainMonthsFilter : ""}
+            ${selectedDaysOfMonth.length > 0 ? certainDaysOfMonthFilter : ""}
+            ${selectedWeekdays.length > 0 ? certainWeekdaysFilter : ""}
             ${requireRangeOfHours ? certainRangeOfHoursFilter : ""}
             ${requireAvailabilityWindows ? availabilityWindowsFilter() : ""}
           }
@@ -154,6 +159,9 @@ const AllEvents = () => {
   };
 
   let eventFilters = buildEventFilters();
+  console.log({
+    eventFilters
+  })
 
   const showPastEvents = () => {
     setStartTimeFilter(pastEventsFilter);
@@ -172,6 +180,7 @@ const AllEvents = () => {
 
   const { loading, error, data, refetch } = useQuery(GET_EVENTS);
 
+  // Use built-in DateTime date filters
   useEffect(() => {
     if (dateRange === dateRangeTypes.FUTURE) {
       setResultsOrder(chronologicalOrder);
@@ -206,12 +215,15 @@ const AllEvents = () => {
     refetch();
   }, [
     years,
-    months,
-    daysOfMonth,
-    weekdays,
+    selectedMonths,
+    selectedDaysOfMonth,
+    selectedWeekdays,
     beginningOfHourRange,
     endOfHourRange,
   ]);
+
+  const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
+  const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
   if (loading) {
     return <p>Loading...</p>;
@@ -319,9 +331,7 @@ const AllEvents = () => {
           <h2>
             <i className="fas fa-sort"></i> Normal Date Range Options
           </h2>
-          <p>
-            These options use normal Dgraph GraphQL DateTime filters.
-          </p>
+          <p>These options use normal Dgraph GraphQL DateTime filters.</p>
           <div className="form-check">
             <input
               className="form-check-input"
@@ -409,7 +419,7 @@ const AllEvents = () => {
               }}
             />
             <label className="form-check-label">
-              Show events on certain date
+              Show events on a certain date
             </label>
           </div>
           {dateRange === dateRangeTypes.CERTAIN_DATE ? (
@@ -441,6 +451,34 @@ const AllEvents = () => {
             are not natively supported by Dgraph's DateTime filters.
           </p>
         </div>
+        <p>Limit events to certain months:</p>
+        <Autocomplete
+          multiple
+          id="checkboxes-tags-demo"
+          options={months}
+          disableCloseOnSelect
+          getOptionLabel={(option) => option.name}
+          value={selectedMonths}
+          onChange={(_, inputMonths) => {
+            setSelectedMonths(inputMonths)
+            console.log({inputMonths})
+          }}
+          renderOption={(option, { selected }) => (
+            <React.Fragment>
+              <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                style={{ marginRight: 8 }}
+                checked={selected}
+              />
+              {option.name}
+            </React.Fragment>
+          )}
+          style={{ width: 500 }}
+          renderInput={(params) => (
+            <TextField {...params} variant="outlined" placeholder="Favorites" />
+          )}
+        />
         <p>The GET_EVENTS GraphQL query is asking for this data:</p>
         {"query {queryEvent" + buildEventFilters() + "{ id title startTime }}"}
         {renderEventList()}

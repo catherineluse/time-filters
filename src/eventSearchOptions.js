@@ -26,13 +26,13 @@ export const months = [
 ];
 
 export const weekdays = [
-  { number: "1", name: "Sunday" },
-  { number: "2", name: "Monday" },
-  { number: "3", name: "Tuesday" },
-  { number: "4", name: "Wednesday" },
-  { number: "5", name: "Thursday" },
-  { number: "6", name: "Friday" },
-  { number: "7", name: "Saturday" },
+  { number: "1", name: "Sunday", shortName: "Sun" },
+  { number: "2", name: "Monday", shortName: "Mon" },
+  { number: "3", name: "Tuesday", shortName: "Tue" },
+  { number: "4", name: "Wednesday", shortName: "Wed" },
+  { number: "5", name: "Thursday", shortName: "Thu" },
+  { number: "6", name: "Friday", shortName: "Fri" },
+  { number: "7", name: "Saturday", shortName: "Sat" },
 ];
 
 export const daysOfTheMonth = [
@@ -143,3 +143,4 @@ export const hourRangesData = [
     "24-hour-label": "22:00 to 24:00",
   },
 ];
+

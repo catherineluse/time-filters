@@ -106,8 +106,9 @@ const EventDetail = () => {
                 {formattedStartDateString} at {`${formattedStartTimeString}`}
                 <div className="time-zone">{`Time zone: ${timeZone}`}</div>
 
-              <i className="far fa-clock"></i>
-
+                <Link className="understatedLink" to={`/edit-event/${eventId}`}>
+                  Edit
+                </Link>
               <hr />
               <ul>
                 <li>startTimeYear: {startTimeYear}</li>

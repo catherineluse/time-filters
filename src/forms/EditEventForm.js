@@ -11,7 +11,7 @@ const UPDATE_EVENT = gql`
   mutation updateEvent(
     $id: ID!
     $title: String
-    $startTime: String
+    $startTime: DateTime
   ) {
     updateEvent(
       input: {
@@ -101,6 +101,10 @@ const EditEventForm = () => {
   if (getEventError) {
     alert(`GET_EVENT error: ${getEventError}`);
     return null;
+  }
+
+  if (updateEventError){
+    alert(`UPDATE EVENT error: ${updateEventError}`)
   }
 
   // If the event is not found,

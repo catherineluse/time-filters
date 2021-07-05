@@ -64,13 +64,8 @@ const AllEvents = () => {
   // that happen on non-contiguous days.
   const [selectedDaysOfMonth, setSelectedDaysOfMonth] = useState([]);
 
-  // Can be used to get events that happen on certain weekdays
-  // across a longer time period, or across multiple
-  // non-contiguous weekdays.
-  const [selectedWeekdays, setSelectedWeekdays] = useState([]);
-
   const [selectedHourRanges, setSelectedHourRanges] = useState([]);
-
+  const [selectedWeekdays, setSelectedWeekdays] = useState([]);
   const [selectedWeeklyHourRanges, setSelectedWeeklyHourRanges] = useState({});
 
   const [resultsPerPage, setResultsPerPage] = useState(10);
@@ -92,36 +87,63 @@ const AllEvents = () => {
   const certainDaysOfMonthFilter = `startTimeDayOfMonth: {anyofterms: "${selectedDaysOfMonth.join(
     " "
   )}"}`;
-  const certainWeekdaysFilter = `startTimeDayOfWeek: {anyofterms: "${selectedWeekdays
-    .map((e) => e.name)
-    .join(" ")}"}`;
 
-  const getRangeOfHoursFilter = () => {
-    if (selectedHourRanges === 0) {
-      return "";
-    }
+  const getWeeklyTimeRangeFilter = () => {
+    // The selected weekly time windows are in the
+    // piece of state called selectedWeeklyHourRanges.
+    // That data structure is an object where the keys
+    // are weekdays and the values are times of day.
+    // But to create a GraphQL query filter out of that,
+    // this function flattens the structure so that the
+    // filter will look something like this:
 
-    const rangeObjects = selectedHourRanges.map((range) => {
-      return `{startTimeHourOfDay: {between: {min: ${range.min}, max: ${range.max}}}}`;
-    });
-    return `and: {or: [${rangeObjects}]}`;
+    // and: {
+    //   or: [
+    //   {
+    //     startTimeHourOfDay: { 
+    //         between: { 
+    //           min: 3, 
+    //           max: 6 
+    //         } 
+    //     },
+    //     startTimeDayOfWeek: {
+    //       allofterms: "Thursday"
+    //     }
+    //   },
+    //   {
+    //     startTimeHourOfDay: { 
+    //       between: { 
+    //         min: 0, 
+    //         max: 3 
+    //       } 
+    //     },
+    //     startTimeDayOfWeek: {
+    //       allofterms: "Friday"
+    //     }
+    //   }
+    //   ]
+    // }
+
+    let weekdayNameArray = Object.keys(selectedWeeklyHourRanges)
+
+    let weeklyTimeRangeObjects = weekdayNameArray.map(weekdayName => {
+      let timeRangeData = selectedWeeklyHourRanges[weekdayName];
+      let hourRangeArray = Object.keys(timeRangeData)
+      
+      return hourRangeArray.map(hourRangeName => {
+        const max = timeRangeData[hourRangeName].max;
+        const min = timeRangeData[hourRangeName].min;
+        return `{startTimeHourOfDay: {between: {min: ${min}, max: ${max}}}, startTimeDayOfWeek: {allofterms: "${weekdayName}"}}`
+      }).join("")
+    }).join("")
+
+    let frame = `and: {or: [${weeklyTimeRangeObjects}]}`
+    return frame;
   };
 
-  const getWeeklyRangeOfHoursFilter = () => {};
+  const weeklyTimeRangeFilter = getWeeklyTimeRangeFilter()
 
   const buildEventFilters = () => {
-    console.log({
-      certainDaysOfMonthFilter,
-      certainMonthsFilter,
-      certainWeekdaysFilter,
-      hourRangeFilter: getRangeOfHoursFilter(),
-    });
-    console.log({
-      selectedDaysOfMonth,
-      selectedMonths,
-      selectedWeekdays,
-      selectedHourRanges,
-    });
     let eventFilterString = `(
           order: ${resultsOrder},
           first: ${resultsPerPage},
@@ -132,11 +154,8 @@ const AllEvents = () => {
             ${selectedYears.length ? certainYearsFilter : ""}
             ${selectedMonths.length > 0 ? certainMonthsFilter : ""}
             ${selectedDaysOfMonth.length > 0 ? certainDaysOfMonthFilter : ""}
-            ${selectedWeekdays.length > 0 ? certainWeekdaysFilter : ""}
-            ${selectedHourRanges.length > 0 ? getRangeOfHoursFilter() : ""}
-            ${
-              selectedWeeklyHourRanges.length > 0
-                ? getWeeklyRangeOfHoursFilter()
+            ${Object.keys(selectedWeeklyHourRanges).length > 0
+                ? weeklyTimeRangeFilter
                 : ""
             }
           }
@@ -145,14 +164,6 @@ const AllEvents = () => {
   };
 
   let eventFilters = buildEventFilters();
-  console.log({
-    eventFilters,
-  });
-
-  const showPastEvents = () => {
-    setStartTimeFilter(pastEventsFilter);
-    setResultsOrder(reverseChronologicalOrder);
-  };
 
   let GET_EVENTS = gql`
   query getEvents {
@@ -174,7 +185,7 @@ const AllEvents = () => {
     }
     if (dateRange === dateRangeTypes.PAST) {
       setResultsOrder(reverseChronologicalOrder);
-      showPastEvents();
+      setStartTimeFilter(pastEventsFilter);
     }
     if (dateRange === dateRangeTypes.BETWEEN_TWO_DATES) {
       setResultsOrder(chronologicalOrder);
@@ -187,9 +198,8 @@ const AllEvents = () => {
     refetch();
   }, [dateRange, startOfCertainDay, beginningOfDateRange, endOfDateRange]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  // The more complex date filters are within
-  // this useEffect. For example, with these you can:
-
+  // The more complex date filters are used by
+  // this useEffect hook. For example, with these you can:
   // - Get events with a certain day and month, but
   // in any year.
   // - Get all events on certain
@@ -203,15 +213,13 @@ const AllEvents = () => {
     selectedYears,
     selectedMonths,
     selectedDaysOfMonth,
-    selectedWeekdays,
-    selectedHourRanges,
     selectedWeeklyHourRanges,
-  ]);
+  ]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
   const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
-  const timeRangeIsAlreadySelected = (day, timeRange) => {
+  const weeklyTimeRangeIsAlreadySelected = (day, timeRange) => {
     if (day in selectedWeeklyHourRanges) {
       let selectedHourRangesOnDay = selectedWeeklyHourRanges[day];
 
@@ -222,33 +230,115 @@ const AllEvents = () => {
     return false;
   };
 
-  // This function makes it so that when a weekday
+  // This function makes it so that when an
+  // entire weekday column
   // is selected with a checkbox in the form
   // for selecting availability windows, it applies
   // the weekday filter.
   const toggleSelectWeekday = (day) => {
     const removeWeekday = () => {
-      const newWeekdays = selectedWeekdays.filter(weekday => weekday.name !== day.name)
-      setSelectedWeekdays(newWeekdays)
-      console.log({newWeekdays})
-    }
-    const addWeekday = () => {
-      const newWeekdays = [...selectedWeekdays, day]
-      setSelectedWeekdays(newWeekdays)
+      setSelectedWeekdays(
+        selectedWeekdays.filter((weekdayName) => weekdayName !== day.name)
+      );
+      let newSelectedWeeklyHourRanges = { ...selectedWeeklyHourRanges };
+      delete newSelectedWeeklyHourRanges[day.name];
+      setSelectedWeeklyHourRanges(newSelectedWeeklyHourRanges);
+    };
 
-      // If there is a specific time window that is
-      // already selected on this weekday, we should
-      // remove it, assuming the intent is that you 
-      // want to show everything on the given weekday.
-      if (day.name in selectedWeeklyHourRanges){
-        delete selectedWeeklyHourRanges[day.name]
+    const addWeekday = () => {
+      if (selectedWeekdays.indexOf(day.name) === -1) {
+        const newWeekdays = [...selectedWeekdays, day.name];
+        setSelectedWeekdays(newWeekdays);
       }
-      console.log({newWeekdays})
-    }
-    if (selectedWeekdays.indexOf(day) !== -1){
-      removeWeekday()
+
+      // When selecting a weekday, first clear out all the
+      // individual time filters inside it.
+      // Then just add all the time ranges for that day.
+      // If you're wondering why we don't filter for a weekday directly,
+      // it's because if we filtered by a weekday and combined it
+      // with a filter for other weekly windows of time, we would get
+      // only results included in BOTH filters.
+      let newSelectedWeeklyHourRanges = { ...selectedWeeklyHourRanges };
+      newSelectedWeeklyHourRanges[day.name] = {};
+      for (let i = 0; i < hourRangesData.length; i++) {
+        let timeRange = hourRangesData[i];
+        newSelectedWeeklyHourRanges[day.name][timeRange["12-hour-label"]] = {
+          max: timeRange.max,
+          min: timeRange.min,
+        };
+      }
+      setSelectedWeeklyHourRanges(newSelectedWeeklyHourRanges);
+    };
+
+    if (selectedWeekdays.indexOf(day.name) !== -1) {
+      removeWeekday();
     } else {
-      addWeekday()
+      addWeekday();
+    }
+  };
+
+  // This function makes it so that when an
+  // entire time range range row is selected with
+  // a checkbox in the form for selecting
+  // availability windows, it applies to the
+  // time range filter.
+  const toggleSelectTimeRange = (timeRange) => {
+    const removeTimeRange = () => {
+      const newSelectedWeeklyHourRanges = { ...selectedWeeklyHourRanges };
+
+      for (let weekday in newSelectedWeeklyHourRanges) {
+        // existing time ranges are in the form of an object
+        // in which the key is the time in 12-hour format.
+
+        if (newSelectedWeeklyHourRanges[weekday][timeRange["12-hour-label"]])
+        delete newSelectedWeeklyHourRanges[weekday][timeRange["12-hour-label"]]
+      }
+      setSelectedWeeklyHourRanges(newSelectedWeeklyHourRanges);
+    };
+
+    const addTimeRange = () => {
+      const newSelectedWeeklyHourRanges = { ...selectedWeeklyHourRanges };
+
+      // Add the time range for every day of the week.
+      // If you're wondering why we don't filter for a time range directly,
+      // it's because if we filtered by an hour range and combined it
+      // with a filter for other weekly windows of time, we would get
+      // only results included in BOTH filters.
+
+      for (let i = 0; i < weekdays.length; i++) {
+        let weekdayName = weekdays[i].name;
+
+        if (newSelectedWeeklyHourRanges[weekdayName]) {
+          // If there is already an entry for the weekday,
+          // avoid overWriting existing data.
+          const existingTimesForWeekday =
+            newSelectedWeeklyHourRanges[weekdayName];
+          newSelectedWeeklyHourRanges[weekdayName] = {
+            ...existingTimesForWeekday,
+          };
+          newSelectedWeeklyHourRanges[weekdayName][timeRange["12-hour-label"]] =
+            { max: timeRange.max, min: timeRange.min };
+        } else {
+          // If there are no entries for the weekday yet,
+          // add a new one with the given time range.
+          newSelectedWeeklyHourRanges[weekdayName] = {};
+          newSelectedWeeklyHourRanges[weekdayName][timeRange["12-hour-label"]] = {
+            max: timeRange.max,
+            min: timeRange.min,
+          };
+        }
+      }
+
+      setSelectedHourRanges([
+        ...selectedHourRanges,
+        timeRange["12-hour-label"],
+      ]);
+    };
+
+    if (selectedHourRanges.indexOf(timeRange["12-hour-label"]) !== -1) {
+      removeTimeRange();
+    } else {
+      addTimeRange();
     }
   };
 
@@ -258,6 +348,7 @@ const AllEvents = () => {
   const toggleWeeklyTimeRange = (day, timeRange) => {
     // We keep track of the selected weekly time ranges
     // in an object data structure to prevent duplicates.
+    const timeRangeName = timeRange["12-hour-label"];
     let newWeeklyHourRanges = { ...selectedWeeklyHourRanges };
 
     const selectTimeRange = () => {
@@ -265,17 +356,23 @@ const AllEvents = () => {
       // add it first, then add the entry for the time range.
       if (!(day in newWeeklyHourRanges)) {
         newWeeklyHourRanges[day] = {};
-        newWeeklyHourRanges[day][timeRange] = true;
+        newWeeklyHourRanges[day][timeRangeName] = {
+          min: timeRange.min,
+          max: timeRange.max,
+        };
         return;
       }
       // If there is already at least one hour range on the weekday
       // that is being toggled, but the specific time range isn't
       // selected yet, select it.
-      newWeeklyHourRanges[day][timeRange] = true;
+      newWeeklyHourRanges[day][timeRangeName] = {
+        min: timeRange.min,
+        max: timeRange.max,
+      };
     };
 
     const deselectTimeRange = () => {
-      delete newWeeklyHourRanges[day][timeRange];
+      delete newWeeklyHourRanges[day][timeRangeName];
 
       // If there are no other selected time ranges on the weekday,
       // also delete the selected weekday.
@@ -285,7 +382,7 @@ const AllEvents = () => {
       setSelectedWeeklyHourRanges(newWeeklyHourRanges);
     };
 
-    if (timeRangeIsAlreadySelected(day, timeRange)) {
+    if (weeklyTimeRangeIsAlreadySelected(day, timeRangeName)) {
       deselectTimeRange();
     } else {
       selectTimeRange();
@@ -307,30 +404,34 @@ const AllEvents = () => {
 
     const getTableRowItems = (hourRangeData) => {
       return weekdays.map((weekday) => {
-
         const getWeekdayIsSelected = () => {
-          if (selectedWeekdays.map(w => w.name).indexOf(weekday.name) !== -1){
-            return true
-          }
-          return false
-        }
+          return selectedWeekdays.indexOf(weekday.name) !== -1;
+        };
 
-        const weekdayIsSelected = getWeekdayIsSelected()
+        const getHourRangeIsSelected = () => {
+          return (
+            selectedHourRanges.indexOf(hourRangeData["12-hour-label"]) !== -1
+          );
+        };
+
+        const weekdayIsSelected = getWeekdayIsSelected();
+        const hourRangeIsSelected = getHourRangeIsSelected();
 
         return (
           <td key={weekday.shortName}>
             <BootstrapForm.Check
               type="checkbox"
-              disabled={weekdayIsSelected}
-              checked={weekdayIsSelected || timeRangeIsAlreadySelected(
-                weekday.name,
-                hourRangeData["12-hour-label"]
-              )}
-              onChange={() => {
-                toggleWeeklyTimeRange(
+              disabled={weekdayIsSelected || hourRangeIsSelected}
+              checked={
+                weekdayIsSelected ||
+                hourRangeIsSelected ||
+                weeklyTimeRangeIsAlreadySelected(
                   weekday.name,
                   hourRangeData["12-hour-label"]
-                );
+                )
+              }
+              onChange={() => {
+                toggleWeeklyTimeRange(weekday.name, hourRangeData);
               }}
             />
           </td>
@@ -638,64 +739,6 @@ const AllEvents = () => {
             />
           )}
         />
-        <p>Limit events to certain weekdays:</p>
-        <Autocomplete
-          multiple
-          id="select-weekdays"
-          options={weekdays}
-          disableCloseOnSelect
-          getOptionLabel={(option) => option.name}
-          value={selectedWeekdays}
-          onChange={(_, inputWeekdays) => {
-            setSelectedWeekdays(inputWeekdays);
-          }}
-          renderOption={(option, { selected }) => (
-            <React.Fragment>
-              <Checkbox
-                icon={icon}
-                checkedIcon={checkedIcon}
-                style={{ marginRight: 8 }}
-                checked={selected}
-              />
-              {option.name}
-            </React.Fragment>
-          )}
-          style={{ width: 500 }}
-          renderInput={(params) => (
-            <TextField {...params} variant="outlined" placeholder="Weekdays" />
-          )}
-        />
-        <p>Limit events to certain time ranges:</p>
-        <Autocomplete
-          multiple
-          id="select-time-ranges"
-          options={hourRangesData}
-          disableCloseOnSelect
-          getOptionLabel={(option) => option["12-hour-label"]}
-          value={selectedHourRanges}
-          onChange={(_, inputHourRanges) => {
-            setSelectedHourRanges(inputHourRanges);
-          }}
-          renderOption={(option, { selected }) => (
-            <React.Fragment>
-              <Checkbox
-                icon={icon}
-                checkedIcon={checkedIcon}
-                style={{ marginRight: 8 }}
-                checked={selected}
-              />
-              {option["12-hour-label"]}
-            </React.Fragment>
-          )}
-          style={{ width: 500 }}
-          renderInput={(params) => (
-            <TextField
-              {...params}
-              variant="outlined"
-              placeholder="Hour ranges"
-            />
-          )}
-        />
         <p>Limit events to certain weekly time ranges:</p>
         <table className="table table-bordered">
           <thead>
@@ -706,9 +749,13 @@ const AllEvents = () => {
                   <BootstrapForm.Check
                     type="checkbox"
                     checked={
-                      (selectedWeekdays.map(w => w.name).indexOf(weekday.name) !== -1) === true ? true : false
+                      (selectedWeekdays.indexOf(weekday.name) !== -1) === true
+                        ? true
+                        : false
                     }
-                    onChange={() => {toggleSelectWeekday(weekday)}}
+                    onChange={() => {
+                      toggleSelectWeekday(weekday);
+                    }}
                     label={weekday.shortName}
                   />
                 </th>
@@ -717,15 +764,23 @@ const AllEvents = () => {
           </thead>
           <tbody>
             {hourRangesData.map((hourRangeData) => {
-              console.log({ hourRangeData });
               return (
                 <tr key={hourRangeData["12-hour-label"]}>
                   <td>
                     <BootstrapForm.Check
                       type="checkbox"
-                      // value={}
-                      checked={false}
-                      onChange={() => {}}
+                      checked={
+                        (selectedHourRanges.indexOf(
+                          hourRangeData["12-hour-label"]
+                        ) !==
+                          -1) ===
+                        true
+                          ? true
+                          : false
+                      }
+                      onChange={() => {
+                        toggleSelectTimeRange(hourRangeData);
+                      }}
                       label={hourRangeData["12-hour-label"]}
                     />
                   </td>
@@ -735,6 +790,7 @@ const AllEvents = () => {
             })}
           </tbody>
         </table>
+        <h1>Results</h1>
         <p>The weekly time range table's state is:</p>
         {JSON.stringify(selectedWeeklyHourRanges)}
         <p>The GET_EVENTS GraphQL query is asking for this data:</p>

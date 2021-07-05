@@ -68,8 +68,6 @@ const AllEvents = () => {
   const [selectedWeekdays, setSelectedWeekdays] = useState([]);
   const [selectedWeeklyHourRanges, setSelectedWeeklyHourRanges] = useState({});
 
-  const [resultsPerPage, setResultsPerPage] = useState(10);
-
   // Variables for the order of the results
   const chronologicalOrder = "{ asc: startTime }";
   const reverseChronologicalOrder = "{ desc: startTime }";
@@ -146,7 +144,6 @@ const AllEvents = () => {
   const buildEventFilters = () => {
     let eventFilterString = `(
           order: ${resultsOrder},
-          first: ${resultsPerPage},
           filter: {
             startTime: {
                 ${startTimeFilter}

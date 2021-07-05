@@ -517,6 +517,9 @@ const AllEvents = () => {
                   <Link className="understatedLink" to={`/event/${id}`}>
                     Details
                   </Link>
+                  <Link className="understatedLink" to={`/edit-event/${id}`}>
+                    Edit
+                  </Link>
                 </div>
               </div>
             </div>

@@ -59,7 +59,7 @@ const EditEventForm = () => {
     },
     errorPolicy: "all",
     onCompleted() {
-      history.push(`/`);
+      history.push(`/event/${eventId}`);
     },
   });
 
@@ -122,7 +122,7 @@ const EditEventForm = () => {
   if (data.getEvent) {
 
     return (
-      <>
+      <div className="container">
         <div className="pageTitle">
           <span className="backButton" onClick={() => history.goBack()}>
             <i className="fas fa-arrow-left"></i> Back
@@ -143,7 +143,7 @@ const EditEventForm = () => {
           }}
           submitMutation={handleSubmit}
         />
-      </>
+      </div>
     );
   }
 };

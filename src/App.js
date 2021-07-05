@@ -61,7 +61,7 @@ function App() {
               <Route path={`/create-event`} exact>
                 <CreateEventForm />
               </Route>
-              <Route path={`/edit-event`} exact>
+              <Route path={`/edit-event/:eventId`} exact>
                 <EditEventForm />
               </Route>
             </Switch>

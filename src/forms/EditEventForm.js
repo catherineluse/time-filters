@@ -12,6 +12,12 @@ const UPDATE_EVENT = gql`
     $id: ID!
     $title: String
     $startTime: DateTime
+    $startTimeYear: String
+    $startTimeMonth: String
+    $startTimeDayOfMonth: String
+    $startTimeDayOfWeek: String
+    $startTimeHourOfDay: Int
+    $startTimeZone: String
   ) {
     updateEvent(
       input: {
@@ -19,6 +25,12 @@ const UPDATE_EVENT = gql`
         set: {
           title: $title
           startTime: $startTime
+          startTimeYear: $startTimeYear
+          startTimeMonth: $startTimeMonth
+          startTimeDayOfMonth: $startTimeDayOfMonth
+          startTimeDayOfWeek: $startTimeDayOfWeek
+          startTimeHourOfDay: $startTimeHourOfDay
+          startTimeZone: $startTimeZone
         }
       }
     ) {
@@ -26,6 +38,12 @@ const UPDATE_EVENT = gql`
         id
         title
         startTime
+        startTimeYear
+        startTimeMonth
+        startTimeDayOfMonth
+        startTimeDayOfWeek
+        startTimeHourOfDay
+        startTimeZone
       }
     }
   }
@@ -37,6 +55,12 @@ const GET_EVENT = gql`
       id
       title
       startTime
+      startTimeYear
+      startTimeMonth
+      startTimeDayOfMonth
+      startTimeDayOfWeek
+      startTimeHourOfDay
+      startTimeZone
     }
   }
 `;

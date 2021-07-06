@@ -98,22 +98,22 @@ const AllEvents = () => {
     // and: {
     //   or: [
     //   {
-    //     startTimeHourOfDay: { 
-    //         between: { 
-    //           min: 3, 
-    //           max: 6 
-    //         } 
+    //     startTimeHourOfDay: {
+    //         between: {
+    //           min: 3,
+    //           max: 6
+    //         }
     //     },
     //     startTimeDayOfWeek: {
     //       allofterms: "Thursday"
     //     }
     //   },
     //   {
-    //     startTimeHourOfDay: { 
-    //       between: { 
-    //         min: 0, 
-    //         max: 3 
-    //       } 
+    //     startTimeHourOfDay: {
+    //       between: {
+    //         min: 0,
+    //         max: 3
+    //       }
     //     },
     //     startTimeDayOfWeek: {
     //       allofterms: "Friday"
@@ -122,24 +122,28 @@ const AllEvents = () => {
     //   ]
     // }
 
-    let weekdayNameArray = Object.keys(selectedWeeklyHourRanges)
+    let weekdayNameArray = Object.keys(selectedWeeklyHourRanges);
 
-    let weeklyTimeRangeObjects = weekdayNameArray.map(weekdayName => {
-      let timeRangeData = selectedWeeklyHourRanges[weekdayName];
-      let hourRangeArray = Object.keys(timeRangeData)
-      
-      return hourRangeArray.map(hourRangeName => {
-        const max = timeRangeData[hourRangeName].max;
-        const min = timeRangeData[hourRangeName].min;
-        return `{startTimeHourOfDay: {between: {min: ${min}, max: ${max}}}, startTimeDayOfWeek: {allofterms: "${weekdayName}"}}`
-      }).join("")
-    }).join("")
+    let weeklyTimeRangeObjects = weekdayNameArray
+      .map((weekdayName) => {
+        let timeRangeData = selectedWeeklyHourRanges[weekdayName];
+        let hourRangeArray = Object.keys(timeRangeData);
 
-    let frame = `and: {or: [${weeklyTimeRangeObjects}]}`
+        return hourRangeArray
+          .map((hourRangeName) => {
+            const max = timeRangeData[hourRangeName].max;
+            const min = timeRangeData[hourRangeName].min;
+            return `{startTimeHourOfDay: {between: {min: ${min}, max: ${max}}}, startTimeDayOfWeek: {allofterms: "${weekdayName}"}}`;
+          })
+          .join("");
+      })
+      .join("");
+
+    let frame = `and: {or: [${weeklyTimeRangeObjects}]}`;
     return frame;
   };
 
-  const weeklyTimeRangeFilter = getWeeklyTimeRangeFilter()
+  const weeklyTimeRangeFilter = getWeeklyTimeRangeFilter();
 
   const buildEventFilters = () => {
     let eventFilterString = `(
@@ -151,7 +155,8 @@ const AllEvents = () => {
             ${selectedYears.length ? certainYearsFilter : ""}
             ${selectedMonths.length > 0 ? certainMonthsFilter : ""}
             ${selectedDaysOfMonth.length > 0 ? certainDaysOfMonthFilter : ""}
-            ${Object.keys(selectedWeeklyHourRanges).length > 0
+            ${
+              Object.keys(selectedWeeklyHourRanges).length > 0
                 ? weeklyTimeRangeFilter
                 : ""
             }
@@ -159,8 +164,10 @@ const AllEvents = () => {
         )`;
     return eventFilterString;
   };
-
+ 
   let eventFilters = buildEventFilters();
+  console.log({eventFilters, selectedWeeklyHourRanges})
+
 
   let GET_EVENTS = gql`
   query getEvents {
@@ -211,7 +218,8 @@ const AllEvents = () => {
     selectedMonths,
     selectedDaysOfMonth,
     selectedWeeklyHourRanges,
-  ]) // eslint-disable-line react-hooks/exhaustive-deps
+    refetch
+  ]); 
 
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
   const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -287,10 +295,20 @@ const AllEvents = () => {
         // existing time ranges are in the form of an object
         // in which the key is the time in 12-hour format.
 
-        if (newSelectedWeeklyHourRanges[weekday][timeRange["12-hour-label"]])
-        delete newSelectedWeeklyHourRanges[weekday][timeRange["12-hour-label"]]
+        if (newSelectedWeeklyHourRanges[weekday][timeRange["12-hour-label"]]){
+          
+          delete newSelectedWeeklyHourRanges[weekday][timeRange["12-hour-label"]]
+
+          if (Object.keys(newSelectedWeeklyHourRanges[weekday]).length === 0){
+            console.log('i ran')
+            delete newSelectedWeeklyHourRanges[weekday]
+          }
+        }
       }
       setSelectedWeeklyHourRanges(newSelectedWeeklyHourRanges);
+
+      const newHourRanges = selectedHourRanges.filter(e => e !== timeRange["12-hour-label"])
+      setSelectedHourRanges(newHourRanges)
     };
 
     const addTimeRange = () => {
@@ -319,17 +337,17 @@ const AllEvents = () => {
           // If there are no entries for the weekday yet,
           // add a new one with the given time range.
           newSelectedWeeklyHourRanges[weekdayName] = {};
+          console.log({weekdayName, timeRange})
           newSelectedWeeklyHourRanges[weekdayName][timeRange["12-hour-label"]] = {
             max: timeRange.max,
             min: timeRange.min,
           };
         }
       }
-
-      setSelectedHourRanges([
-        ...selectedHourRanges,
-        timeRange["12-hour-label"],
-      ]);
+      setSelectedHourRanges([...selectedHourRanges, timeRange["12-hour-label"]])
+      setSelectedWeeklyHourRanges({
+        ...newSelectedWeeklyHourRanges
+      });
     };
 
     if (selectedHourRanges.indexOf(timeRange["12-hour-label"]) !== -1) {
@@ -366,6 +384,7 @@ const AllEvents = () => {
         min: timeRange.min,
         max: timeRange.max,
       };
+      setSelectedWeeklyHourRanges(newWeeklyHourRanges);
     };
 
     const deselectTimeRange = () => {
@@ -753,7 +772,7 @@ const AllEvents = () => {
                         ? true
                         : false
                     }
-                    onChange={() => {
+                    onChange={(e) => {
                       toggleSelectWeekday(weekday);
                     }}
                     label={weekday.shortName}

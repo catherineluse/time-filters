@@ -40,8 +40,6 @@ const CreateEventForm = () => {
   const defaultStartTimeObj = now.startOf("hour").plus({ hours: 1 });
   const defaultStartTimeISO = defaultStartTimeObj.toISO();
   const [startTime, setStartTime] = useState(defaultStartTimeISO);
-
-  const defaultEndTimeISO = defaultStartTimeObj.plus({ minutes: 15 }).toISO();
  
 
   const [addEvent] = useMutation(ADD_EVENT, {

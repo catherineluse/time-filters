@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import {
   getStartTimeISOs,
   getReadableTimeFromISO,
@@ -43,16 +43,29 @@ const ReusedEventFormFields = ({ formState, submitMutation }) => {
     submitMutation();
   };
 
+  useEffect(() => {
+    // This function is necessary to keep the startTime
+    // field consistent with other fields that represent
+    // its individual components. These components,
+    // such as month, weekday and hour, need to be stored
+    // separately to allow advanced time filtering based on
+    // multiple non-contiguous windows of time.
+    const updateSeparateTimeFields = () => {
+        const startTimeObj = DateTime.fromISO(startTime)
+        const { year, month } = startTimeObj;
+        console.log({ year, month })
+    }
+
+    updateSeparateTimeFields()
+  }, [startTime])
+
   const handleStartDateChange = (dateISO) => {
     setStartTime(dateISO);
-
   };
 
   const handleStartTimeChange = (dateISO) => {
     setStartTime(dateISO);
-
   };
-
 
   const classes = useStyles();
 

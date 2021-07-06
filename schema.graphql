@@ -7,5 +7,4 @@ type Event {
   startTimeDayOfMonth: String! @search
   startTimeDayOfWeek: String! @search
   startTimeHourOfDay: Int! @search
-  startTimeZone: String! @search
 }

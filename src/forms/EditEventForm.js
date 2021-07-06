@@ -17,7 +17,6 @@ const UPDATE_EVENT = gql`
     $startTimeDayOfMonth: String
     $startTimeDayOfWeek: String
     $startTimeHourOfDay: Int
-    $startTimeZone: String
   ) {
     updateEvent(
       input: {
@@ -30,7 +29,6 @@ const UPDATE_EVENT = gql`
           startTimeDayOfMonth: $startTimeDayOfMonth
           startTimeDayOfWeek: $startTimeDayOfWeek
           startTimeHourOfDay: $startTimeHourOfDay
-          startTimeZone: $startTimeZone
         }
       }
     ) {
@@ -43,7 +41,6 @@ const UPDATE_EVENT = gql`
         startTimeDayOfMonth
         startTimeDayOfWeek
         startTimeHourOfDay
-        startTimeZone
       }
     }
   }
@@ -60,7 +57,6 @@ const GET_EVENT = gql`
       startTimeDayOfMonth
       startTimeDayOfWeek
       startTimeHourOfDay
-      startTimeZone
     }
   }
 `;
@@ -74,12 +70,25 @@ const EditEventForm = () => {
   const defaultStartTimeISO = defaultStartTimeObj.toISO();
   const [titleField, setTitleField] = useState("");
   const [startTimeField, setStartTimeField] = useState(defaultStartTimeISO);
+  
+  const [startTimePieces, setStartTimePieces] = useState({
+    startTimeYear: defaultStartTimeObj.year.toString(),
+    startTimeMonth: defaultStartTimeObj.month.toString(),
+    startTimeDayOfMonth: defaultStartTimeObj.day.toString(),
+    startTimeDayOfWeek: defaultStartTimeObj.weekday.toString(),
+    startTimeHourOfDay: defaultStartTimeObj.hour.toString(),
+  })
 
   const [updateEvent, { error: updateEventError }] = useMutation(UPDATE_EVENT, {
     variables: {
       id: eventId,
       title: titleField,
       startTime: startTimeField,
+      startTimeYear: startTimePieces.startTimeYear,
+      startTimeMonth: startTimePieces.startTimeMonth,
+      startTimeDayOfMonth: startTimePieces.startTimeDayOfMonth,
+      startTimeDayOfWeek: startTimePieces.startTimeDayOfWeek,
+      startTimeHourOfDay: startTimePieces.startTimeHourOfDay
     },
     errorPolicy: "all",
     onCompleted() {
@@ -105,16 +114,29 @@ const EditEventForm = () => {
     },
   });
 
+
   useEffect(() => {
     if (data && data.getEvent) {
       const eventData = data.getEvent;
       const {
         title,
         startTime,
+        startTimeYear,
+        startTimeMonth,
+        startTimeDayOfWeek,
+        startTimeDayOfMonth,
+        startTimeHourOfDay,
       } = eventData;
 
       setTitleField(title);
       setStartTimeField(startTime);
+      setStartTimePieces({
+        year: startTimeYear,
+        month: startTimeMonth,
+        day: startTimeDayOfMonth,
+        weekday: startTimeDayOfWeek,
+        hour: startTimeHourOfDay,
+      })
     }
   }, [data]);
 
@@ -168,6 +190,10 @@ const EditEventForm = () => {
               startTime: startTimeField,
               setStartTime: setStartTimeField,
             },
+            startTimePieces: {
+              startTimePieces,
+              setStartTimePieces
+            }
           }}
           submitMutation={handleSubmit}
         />

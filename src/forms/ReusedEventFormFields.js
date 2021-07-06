@@ -36,6 +36,7 @@ const ReusedEventFormFields = ({ formState, submitMutation }) => {
   const {
     title: { title, setTitle },
     startTime: { startTime, setStartTime },
+    startTimePieces: {startTimePieces, setStartTimePieces}
   } = formState;
 
   const onSubmit = async (e) => {
@@ -52,12 +53,20 @@ const ReusedEventFormFields = ({ formState, submitMutation }) => {
     // multiple non-contiguous windows of time.
     const updateSeparateTimeFields = () => {
         const startTimeObj = DateTime.fromISO(startTime)
-        const { year, month } = startTimeObj;
-        console.log({ year, month })
-    }
+        const { year, month, day, weekday, hour, zone } = startTimeObj;
+        console.log({ year, month, day, weekday, hour, zone })
 
+        setStartTimePieces({
+          startTimeYear: year.toString(),
+          startTimeMonth: month.toString(),
+          startTimeDayOfMonth: day.toString(),
+          startTimeDayOfWeek: weekday.toString(),
+          startTimeHourOfDay: hour,
+        })
+    }
+    
     updateSeparateTimeFields()
-  }, [startTime])
+  }, [startTime, setStartTimePieces])
 
   const handleStartDateChange = (dateISO) => {
     setStartTime(dateISO);
@@ -126,7 +135,8 @@ const ReusedEventFormFields = ({ formState, submitMutation }) => {
           }}
         ></Autocomplete>
       </FormControl>
-
+      <p>This form automatically updated these fields based on the start time:</p>
+      <p>{JSON.stringify(startTimePieces)}</p>
       <div className="spacer" />
       <button
         type="button"

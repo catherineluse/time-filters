@@ -15,16 +15,11 @@ const GET_EVENT = gql`
       startTimeDayOfMonth
       startTimeDayOfWeek
       startTimeHourOfDay
-      startTimeZone
     }
   }
 `;
 
 const EventDetail = () => {
-  // If the commentId is provided, we assume
-  // the comment is permalinked, so only one
-  // comment thread is rendered instead
-  // of all the comments.
   const { eventId } = useParams();
 
   const {
@@ -53,7 +48,7 @@ const EventDetail = () => {
       <div className="container">
         <div className="eventPage">
           <p>Could not find the event.</p>
-          <Link to={`/events`}>
+          <Link to={`/`}>
             <p>
               <i className="fas fa-arrow-left"></i> Go back
             </p>
@@ -74,7 +69,6 @@ const EventDetail = () => {
       startTimeDayOfMonth,
       startTimeDayOfWeek,
       startTimeHourOfDay,
-      startTimeZone,
     } = eventData;
 
     const startTimeObj = DateTime.fromISO(startTime);
@@ -116,7 +110,6 @@ const EventDetail = () => {
                 <li>startTimeDayOfMonth: {startTimeDayOfMonth}</li>
                 <li>startTimeDayOfWeek: {startTimeDayOfWeek}</li>
                 <li>startTimeHourOfDay: {startTimeHourOfDay}</li>
-                <li>startTimeZone: {startTimeZone}</li>
               </ul>
             </div>
           </div>

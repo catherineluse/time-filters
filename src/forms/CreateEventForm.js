@@ -12,13 +12,23 @@ var now = DateTime.now();
 const ADD_EVENT = gql`
   mutation addEvent(
     $title: String!
-    $startTime: String!
+    $startTime: DateTime!
+    $startTimeYear: String!
+    $startTimeMonth: String!
+    $startTimeDayOfMonth: String!
+    $startTimeDayOfWeek: String!
+    $startTimeHourOfDay: Int!
   ) {
     addEvent(
       input: [
         {
           title: $title
           startTime: $startTime
+          startTimeYear: $startTimeYear
+          startTimeMonth: $startTimeMonth
+          startTimeDayOfMonth: $startTimeDayOfMonth
+          startTimeDayOfWeek: $startTimeDayOfWeek
+          startTimeHourOfDay: $startTimeHourOfDay
         }
       ]
     ) {
@@ -26,6 +36,11 @@ const ADD_EVENT = gql`
         id
         title
         startTime
+        startTimeYear
+        startTimeMonth
+        startTimeDayOfMonth
+        startTimeDayOfWeek
+        startTimeHourOfDay
       }
     }
   }
@@ -41,15 +56,27 @@ const CreateEventForm = () => {
   const defaultStartTimeISO = defaultStartTimeObj.toISO();
   const [startTime, setStartTime] = useState(defaultStartTimeISO);
  
+  const [startTimePieces, setStartTimePieces] = useState({
+    startTimeYear: defaultStartTimeObj.year.toString(),
+    startTimeMonth: defaultStartTimeObj.month.toString(),
+    startTimeDayOfMonth: defaultStartTimeObj.day.toString(),
+    startTimeDayOfWeek: defaultStartTimeObj.weekday.toString(),
+    startTimeHourOfDay: defaultStartTimeObj.hour,
+  })
 
   const [addEvent] = useMutation(ADD_EVENT, {
     variables: {
       title,
       startTime,
+      startTimeYear: startTimePieces.startTimeYear,
+      startTimeMonth: startTimePieces.startTimeMonth,
+      startTimeDayOfMonth: startTimePieces.startTimeDayOfMonth,
+      startTimeDayOfWeek: startTimePieces.startTimeDayOfWeek,
+      startTimeHourOfDay: startTimePieces.startTimeHourOfDay,
     },
     onCompleted({ addEvent }) {
       const newEventId = addEvent.event[0].id;
-      history.push(`/c/${url}/event/${newEventId}`);
+      history.push(`/event/${newEventId}`);
     },
     update(cache, { data: { addEvent }}) {
       const newEvent = addEvent.event[0]
@@ -83,7 +110,7 @@ const CreateEventForm = () => {
 
 
   return (
-    <>
+    <div className="container">
       <div className="pageTitle">
         <span className="backButton">
           <Link to={`/c/${url}/events`}>
@@ -104,10 +131,14 @@ const CreateEventForm = () => {
             startTime,
             setStartTime,
           },
+          startTimePieces: {
+            startTimePieces,
+            setStartTimePieces
+          }
         }}
         submitMutation={addEvent}
       />
-    </>
+    </div>
   );
 };
 

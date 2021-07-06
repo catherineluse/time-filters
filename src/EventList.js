@@ -164,10 +164,8 @@ const AllEvents = () => {
         )`;
     return eventFilterString;
   };
- 
-  let eventFilters = buildEventFilters();
-  console.log({eventFilters, selectedWeeklyHourRanges})
 
+  let eventFilters = buildEventFilters();
 
   let GET_EVENTS = gql`
   query getEvents {
@@ -218,8 +216,8 @@ const AllEvents = () => {
     selectedMonths,
     selectedDaysOfMonth,
     selectedWeeklyHourRanges,
-    refetch
-  ]); 
+    refetch,
+  ]);
 
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
   const checkedIcon = <CheckBoxIcon fontSize="small" />;
@@ -295,20 +293,23 @@ const AllEvents = () => {
         // existing time ranges are in the form of an object
         // in which the key is the time in 12-hour format.
 
-        if (newSelectedWeeklyHourRanges[weekday][timeRange["12-hour-label"]]){
-          
-          delete newSelectedWeeklyHourRanges[weekday][timeRange["12-hour-label"]]
+        if (newSelectedWeeklyHourRanges[weekday][timeRange["12-hour-label"]]) {
+          delete newSelectedWeeklyHourRanges[weekday][
+            timeRange["12-hour-label"]
+          ];
 
-          if (Object.keys(newSelectedWeeklyHourRanges[weekday]).length === 0){
-            console.log('i ran')
-            delete newSelectedWeeklyHourRanges[weekday]
+          if (Object.keys(newSelectedWeeklyHourRanges[weekday]).length === 0) {
+            console.log("i ran");
+            delete newSelectedWeeklyHourRanges[weekday];
           }
         }
       }
       setSelectedWeeklyHourRanges(newSelectedWeeklyHourRanges);
 
-      const newHourRanges = selectedHourRanges.filter(e => e !== timeRange["12-hour-label"])
-      setSelectedHourRanges(newHourRanges)
+      const newHourRanges = selectedHourRanges.filter(
+        (e) => e !== timeRange["12-hour-label"]
+      );
+      setSelectedHourRanges(newHourRanges);
     };
 
     const addTimeRange = () => {
@@ -337,16 +338,20 @@ const AllEvents = () => {
           // If there are no entries for the weekday yet,
           // add a new one with the given time range.
           newSelectedWeeklyHourRanges[weekdayName] = {};
-          console.log({weekdayName, timeRange})
-          newSelectedWeeklyHourRanges[weekdayName][timeRange["12-hour-label"]] = {
-            max: timeRange.max,
-            min: timeRange.min,
-          };
+          console.log({ weekdayName, timeRange });
+          newSelectedWeeklyHourRanges[weekdayName][timeRange["12-hour-label"]] =
+            {
+              max: timeRange.max,
+              min: timeRange.min,
+            };
         }
       }
-      setSelectedHourRanges([...selectedHourRanges, timeRange["12-hour-label"]])
+      setSelectedHourRanges([
+        ...selectedHourRanges,
+        timeRange["12-hour-label"],
+      ]);
       setSelectedWeeklyHourRanges({
-        ...newSelectedWeeklyHourRanges
+        ...newSelectedWeeklyHourRanges,
       });
     };
 
@@ -549,6 +554,9 @@ const AllEvents = () => {
     return (
       <div className="container">
         <h1>All Events</h1>
+        <Link className="understatedLink" to={"/create-event"}>
+          Create event
+        </Link>
         <div className="event-filters">
           <h2>
             <i className="fas fa-sort"></i> Normal Date Range Options

@@ -222,9 +222,9 @@ const AllEvents = () => {
   const icon = <CheckBoxOutlineBlankIcon fontSize="small" />;
   const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
-  const weeklyTimeRangeIsAlreadySelected = (day, timeRange) => {
-    if (day in selectedWeeklyHourRanges) {
-      let selectedHourRangesOnDay = selectedWeeklyHourRanges[day];
+  const weeklyTimeRangeIsAlreadySelected = (dayNumber, timeRange) => {
+    if (dayNumber in selectedWeeklyHourRanges) {
+      let selectedHourRangesOnDay = selectedWeeklyHourRanges[dayNumber];
 
       if (timeRange in selectedHourRangesOnDay) {
         return true;
@@ -239,18 +239,20 @@ const AllEvents = () => {
   // for selecting availability windows, it applies
   // the weekday filter.
   const toggleSelectWeekday = (day) => {
+    console.log({selectedWeekdays, day})
     const removeWeekday = () => {
       setSelectedWeekdays(
-        selectedWeekdays.filter((weekdayName) => weekdayName !== day.name)
+        selectedWeekdays.filter((weekdayNumber) => weekdayNumber !== day.number)
       );
       let newSelectedWeeklyHourRanges = { ...selectedWeeklyHourRanges };
-      delete newSelectedWeeklyHourRanges[day.name];
+      delete newSelectedWeeklyHourRanges[day.number];
       setSelectedWeeklyHourRanges(newSelectedWeeklyHourRanges);
     };
 
     const addWeekday = () => {
-      if (selectedWeekdays.indexOf(day.name) === -1) {
-        const newWeekdays = [...selectedWeekdays, day.name];
+      if (selectedWeekdays.indexOf(day.number) === -1) {
+        console.log('i ran')
+        const newWeekdays = [...selectedWeekdays, day.number];
         setSelectedWeekdays(newWeekdays);
       }
 
@@ -262,10 +264,10 @@ const AllEvents = () => {
       // with a filter for other weekly windows of time, we would get
       // only results included in BOTH filters.
       let newSelectedWeeklyHourRanges = { ...selectedWeeklyHourRanges };
-      newSelectedWeeklyHourRanges[day.name] = {};
+      newSelectedWeeklyHourRanges[day.number] = {};
       for (let i = 0; i < hourRangesData.length; i++) {
         let timeRange = hourRangesData[i];
-        newSelectedWeeklyHourRanges[day.name][timeRange["12-hour-label"]] = {
+        newSelectedWeeklyHourRanges[day.number][timeRange["12-hour-label"]] = {
           max: timeRange.max,
           min: timeRange.min,
         };
@@ -273,7 +275,7 @@ const AllEvents = () => {
       setSelectedWeeklyHourRanges(newSelectedWeeklyHourRanges);
     };
 
-    if (selectedWeekdays.indexOf(day.name) !== -1) {
+    if (selectedWeekdays.indexOf(day.number) !== -1) {
       removeWeekday();
     } else {
       addWeekday();
@@ -426,7 +428,7 @@ const AllEvents = () => {
     const getTableRowItems = (hourRangeData) => {
       return weekdays.map((weekday) => {
         const getWeekdayIsSelected = () => {
-          return selectedWeekdays.indexOf(weekday.name) !== -1;
+          return selectedWeekdays.indexOf(weekday.number) !== -1;
         };
 
         const getHourRangeIsSelected = () => {
@@ -447,12 +449,12 @@ const AllEvents = () => {
                 weekdayIsSelected ||
                 hourRangeIsSelected ||
                 weeklyTimeRangeIsAlreadySelected(
-                  weekday.name,
+                  weekday.number,
                   hourRangeData["12-hour-label"]
                 )
               }
               onChange={() => {
-                toggleWeeklyTimeRange(weekday.name, hourRangeData);
+                toggleWeeklyTimeRange(weekday.number, hourRangeData);
               }}
             />
           </td>
@@ -776,7 +778,7 @@ const AllEvents = () => {
                   <BootstrapForm.Check
                     type="checkbox"
                     checked={
-                      (selectedWeekdays.indexOf(weekday.name) !== -1) === true
+                      (selectedWeekdays.indexOf(weekday.number) !== -1) === true
                         ? true
                         : false
                     }

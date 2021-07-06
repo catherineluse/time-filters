@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useQuery, gql } from "@apollo/client";
-import { Link } from "react-router-dom";
+import { Link, useHistory } from "react-router-dom";
 import Grid from "@material-ui/core/Grid";
 import { KeyboardDatePicker } from "@material-ui/pickers";
 import Checkbox from "@material-ui/core/Checkbox";
@@ -27,6 +27,7 @@ const dateRangeTypes = {
 };
 
 const AllEvents = () => {
+  const history = useHistory();
   const now = DateTime.now();
   const currentYear = now.year;
   const nowISO = now.toISO();
